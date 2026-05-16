@@ -1,0 +1,98 @@
+# Kürsü — Netlify config
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[functions]
+  node_bundler = "esbuild"
+  # Default to 26s timeout (Netlify Pro). Background functions run separately with 15min budget.
+  external_node_modules = ["@neondatabase/serverless", "pdf-parse"]
+
+[functions."background-*"]
+  # Background functions live in their own directory.
+
+[dev]
+  command = "npm run dev:vite"
+  port = 8888
+  targetPort = 5173
+  autoLaunch = false
+
+# ----- API REWRITES -----
+# REST endpoints
+[[redirects]]
+  from = "/api/lectures"
+  to = "/.netlify/functions/lectures"
+  status = 200
+
+[[redirects]]
+  from = "/api/lectures/by-code/:code"
+  to = "/.netlify/functions/lecture-by-code?code=:code"
+  status = 200
+
+[[redirects]]
+  from = "/api/lectures/:id"
+  to = "/.netlify/functions/lecture-by-id?id=:id"
+  status = 200
+
+[[redirects]]
+  from = "/api/lectures/:id/notes"
+  to = "/.netlify/functions/notes-upload?id=:id"
+  status = 200
+
+[[redirects]]
+  from = "/api/lectures/:id/start"
+  to = "/.netlify/functions/lecture-start?id=:id"
+  status = 200
+
+[[redirects]]
+  from = "/api/lectures/:id/end"
+  to = "/.netlify/functions/lecture-end?id=:id"
+  status = 200
+
+[[redirects]]
+  from = "/api/lectures/:id/transcript/append"
+  to = "/.netlify/functions/transcript-append?id=:id"
+  status = 200
+
+[[redirects]]
+  from = "/api/lectures/:id/transcript"
+  to = "/.netlify/functions/transcript-get?id=:id"
+  status = 200
+
+[[redirects]]
+  from = "/api/lectures/:id/student-join"
+  to = "/.netlify/functions/student-join?id=:id"
+  status = 200
+
+[[redirects]]
+  from = "/api/lectures/:id/questions"
+  to = "/.netlify/functions/question-ask?id=:id"
+  status = 200
+  conditions = { Method = ["POST"] }
+
+[[redirects]]
+  from = "/api/lectures/:id/questions"
+  to = "/.netlify/functions/questions-list?id=:id"
+  status = 200
+  conditions = { Method = ["GET"] }
+
+[[redirects]]
+  from = "/api/questions/:id/teacher-response"
+  to = "/.netlify/functions/question-teacher-respond?id=:id"
+  status = 200
+
+[[redirects]]
+  from = "/api/lectures/:id/feedback"
+  to = "/.netlify/functions/feedback-get?id=:id"
+  status = 200
+
+# SPA fallback (always last)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
