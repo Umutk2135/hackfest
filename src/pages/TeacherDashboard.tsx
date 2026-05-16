@@ -28,7 +28,7 @@ export function TeacherDashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">{t('teacher.dashboard.title')}</h1>
-        <Button asChild={false}>
+        <Button className="inline-flex">
           <Link to="/teacher/lectures/new" className="inline-flex items-center gap-2">
             <Plus className="h-4 w-4" />
             {t('teacher.dashboard.new')}
@@ -50,7 +50,7 @@ export function TeacherDashboard() {
           title={t('teacher.dashboard.empty')}
           description="Yeni ders oluştur ve notlarınızı yükleyin."
           action={
-            <Button asChild={false}>
+            <Button className="inline-flex">
               <Link to="/teacher/lectures/new">{t('teacher.dashboard.new')}</Link>
             </Button>
           }

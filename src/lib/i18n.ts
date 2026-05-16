@@ -11,6 +11,7 @@ export const tr = {
   'app.role.student': 'Öğrenci',
   'app.theme.light': 'Aydınlık',
   'app.theme.dark': 'Karanlık',
+  'app.mock.banner': 'Mock API — veriler yerel bellekte; sunucu gerekmez',
 
   // Landing
   'landing.cta.teacher': 'Öğretmen olarak giriş yap',

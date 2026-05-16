@@ -1,6 +1,8 @@
 /**
  * OWNER: P1 (Frontend) — but shape mirrors shared/types.ts (P2/P3 also read it).
  * Typed fetch wrapper. All endpoints documented in plan Section 6.
+ *
+ * When VITE_MOCK_API=true, delegates to src/lib/mock/api.ts (no backend required).
  */
 import type {
   CreateLectureRequest,
@@ -23,6 +25,10 @@ import type {
   GetFeedbackResponse,
   ApiError,
 } from '@shared/types';
+import { isMockApi } from '@/lib/mock/config';
+import { mockApi } from '@/lib/mock/api';
+
+export { isMockApi };
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {
@@ -41,8 +47,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   return parsed as T;
 }
 
-export const api = {
-  // Lectures
+const liveApi = {
   listLectures: () => call<ListLecturesResponse>('/api/lectures'),
   createLecture: (body: CreateLectureRequest) =>
     call<CreateLectureResponse>('/api/lectures', {
@@ -67,8 +72,6 @@ export const api = {
     call<StartSessionResponse>(`/api/lectures/${id}/start`, { method: 'POST' }),
   endSession: (id: string) =>
     call<EndSessionResponse>(`/api/lectures/${id}/end`, { method: 'POST' }),
-
-  // Transcript
   appendTranscript: (id: string, body: TranscriptAppendRequest) =>
     call<TranscriptAppendResponse>(`/api/lectures/${id}/transcript/append`, {
       method: 'POST',
@@ -78,8 +81,6 @@ export const api = {
     call<TranscriptGetResponse>(
       `/api/lectures/${id}/transcript${since !== undefined ? `?since=${since}` : ''}`,
     ),
-
-  // Student + questions
   studentJoin: (id: string, body: StudentJoinRequest) =>
     call<StudentJoinResponse>(`/api/lectures/${id}/student-join`, {
       method: 'POST',
@@ -94,10 +95,10 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
-
-  // Feedback
   getFeedback: (id: string) => call<GetFeedbackResponse>(`/api/lectures/${id}/feedback`),
 };
+
+export const api = isMockApi ? mockApi : liveApi;
 
 /** Path for the SSE endpoint — opened via fetch+ReadableStream (EventSource doesn't allow POST). */
 export const askQuestionPath = (lectureId: string) => `/api/lectures/${lectureId}/questions`;

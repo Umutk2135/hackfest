@@ -8,6 +8,7 @@ import { RoleSwitcher } from './RoleSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 import { useRole } from '@/hooks/useRole';
 import { t } from '@/lib/i18n';
+import { isMockApi } from '@/lib/api';
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { role } = useRole();
@@ -33,7 +34,18 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className="flex-1 mx-auto w-full max-w-6xl px-4 py-6">{children}</main>
+      {isMockApi ? (
+        <div
+          role="status"
+          className="bg-amber-500/15 border-b border-amber-500/30 text-center py-1.5 text-xs font-medium text-amber-900 dark:text-amber-100"
+        >
+          {t('app.mock.banner')}
+        </div>
+      ) : null}
+
+      <main className="flex-1 mx-auto w-full max-w-6xl px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+        {children}
+      </main>
 
       <footer className="border-t border-[hsl(var(--border))] py-4">
         <div className="mx-auto max-w-6xl px-4 text-xs text-[hsl(var(--muted-foreground))]">

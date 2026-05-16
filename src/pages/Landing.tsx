@@ -15,13 +15,13 @@ export function Landing() {
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">{t('app.name')}</h1>
         <p className="mt-3 text-lg text-[hsl(var(--muted-foreground))]">{t('app.tagline')}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Button asChild={false} size="lg">
+          <Button size="lg" className="inline-flex">
             <Link to="/teacher" className="inline-flex items-center gap-2">
               <GraduationCap className="h-4 w-4" />
               {t('landing.cta.teacher')}
             </Link>
           </Button>
-          <Button asChild={false} variant="outline" size="lg">
+          <Button variant="outline" size="lg" className="inline-flex">
             <Link to="/student" className="inline-flex items-center gap-2">
               <UserRound className="h-4 w-4" />
               {t('landing.cta.student')}
