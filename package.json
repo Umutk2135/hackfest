@@ -17,7 +17,11 @@
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx db/seed.ts",
     "test": "vitest run",
-    "smoke:api": "bash db/smoke-api.sh"
+    "smoke:api": "bash db/smoke-api.sh",
+    "smoke:agents": "tsx --env-file=.env.local scripts/smoke-agents.ts",
+    "smoke:answer": "tsx --env-file=.env.local scripts/smoke-answer.ts",
+    "smoke:flag": "tsx --env-file=.env.local scripts/smoke-flag-escalate.ts",
+    "smoke:feedback": "tsx --env-file=.env.local scripts/smoke-feedback.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.40.0",
