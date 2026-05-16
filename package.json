@@ -21,7 +21,8 @@
     "smoke:agents": "tsx --env-file=.env.local scripts/smoke-agents.ts",
     "smoke:answer": "tsx --env-file=.env.local scripts/smoke-answer.ts",
     "smoke:flag": "tsx --env-file=.env.local scripts/smoke-flag-escalate.ts",
-    "smoke:feedback": "tsx --env-file=.env.local scripts/smoke-feedback.ts"
+    "smoke:feedback": "tsx --env-file=.env.local scripts/smoke-feedback.ts",
+    "smoke:chunking": "tsx scripts/smoke-chunking.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.40.0",
