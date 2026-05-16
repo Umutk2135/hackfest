@@ -5,9 +5,10 @@
   "type": "module",
   "description": "Kürsü — AI Teaching Assistant Platform (HSIL Hackathon 2026)",
   "scripts": {
-    "dev": "netlify dev",
+    "sync:bg": "bash db/sync-background-functions.sh",
+    "dev": "npm run sync:bg && netlify dev",
     "dev:vite": "vite",
-    "build": "vite build",
+    "build": "npm run sync:bg && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
@@ -15,7 +16,8 @@
     "db:migrate": "tsx db/migrate.ts",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx db/seed.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "smoke:api": "bash db/smoke-api.sh"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.40.0",

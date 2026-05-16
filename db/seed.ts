@@ -25,7 +25,7 @@ async function main() {
       status: 'draft',
       sessionCode: 'KRSU-DEMO',
     })
-    .onConflictDoNothing();
+    .onConflictDoNothing({ target: lectures.sessionCode });
 
   console.log('Seed complete.');
 }

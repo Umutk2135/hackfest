@@ -7,6 +7,10 @@ build/
 
 # Netlify
 .netlify/
+# Synced from netlify/background-functions/ (P3) — see db/sync-background-functions.sh
+netlify/functions/background-embed-notes.ts
+netlify/functions/background-embed-transcript.ts
+netlify/functions/background-generate-feedback.ts
 
 # Env
 .env
