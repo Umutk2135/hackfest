@@ -1,18 +1,21 @@
 /**
- * OWNER: P1 (Frontend)
- * Clickable inline citation chip. Click → toast (Phase 3 swaps for modal w/ full snippet).
+ * OWNER: P1 (Frontend) — citation-badge-note / citation-badge-transcript
  */
 import { toast } from 'sonner';
 import type { Citation } from '@shared/types';
 import { cn } from '@/lib/cn';
 
 export function CitationBadge({ citation }: { citation: Citation }) {
-  const label = citation.source_type === 'note' ? `Not: ${citation.reference}` : `Ders: ${citation.reference}`;
+  const isNote = citation.source_type === 'note';
+  const label = isNote ? `Not: ${citation.reference}` : `Ders: ${citation.reference}`;
   return (
     <button
+      type="button"
       onClick={() => toast(`${label} — ${citation.snippet}`)}
       className={cn(
-        'text-[10px] px-1.5 py-0.5 rounded border border-current opacity-80 hover:opacity-100 transition-opacity',
+        'text-xs font-medium px-2.5 py-1 rounded-full transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        isNote && 'bg-[#ede9f4] text-[hsl(var(--citation-note))]',
+        !isNote && 'bg-[#e4f0e8] text-[hsl(var(--citation-transcript))]',
       )}
       title={citation.snippet}
     >

@@ -29,15 +29,15 @@ export function TeacherLectureDetail() {
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">{lecture.title}</h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">{lecture.subject}</p>
+          <h1 className="font-display text-3xl font-medium">{lecture.title}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{lecture.subject}</p>
         </div>
         <LectureStatusBadge status={lecture.status} />
       </div>
 
-      <Card>
+      <Card className="kursu-feature-card">
         <CardHeader>
-          <CardTitle className="text-base">Notlar ({notes.length})</CardTitle>
+          <CardTitle className="font-display text-xl">Notlar ({notes.length})</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <NoteUploader lectureId={lecture.id} />

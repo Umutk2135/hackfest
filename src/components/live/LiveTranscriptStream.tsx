@@ -1,14 +1,10 @@
 /**
- * OWNER: P1 (Frontend)
- * Auto-scrolling transcript display.
- *
- * Two modes:
- *  - source="mic": shows segments produced by the local mic (teacher view).
- *  - source="server": polls /api/lectures/:id/transcript every 2s (student view).
+ * OWNER: P1 (Frontend) — transcript-panel per DESIGN.md
  */
 import { useEffect, useRef, useState } from 'react';
 import { api } from '@/lib/api';
 import { mmss } from '@/lib/format';
+import { t } from '@/lib/i18n';
 import type { TranscriptSegment } from '@shared/types';
 
 interface Props {
@@ -52,7 +48,11 @@ export function LiveTranscriptStream({ lectureId, source, interim, localSegments
 
   const segs =
     source === 'mic'
-      ? (localSegments ?? []).map((s) => ({ key: `m${s.index}`, t: mmss(s.startSec), content: s.content }))
+      ? (localSegments ?? []).map((s) => ({
+          key: `m${s.index}`,
+          t: mmss(s.startSec),
+          content: s.content,
+        }))
       : serverSegments.map((s) => ({
           key: s.id,
           t: mmss(s.startTimeSeconds),
@@ -60,22 +60,19 @@ export function LiveTranscriptStream({ lectureId, source, interim, localSegments
         }));
 
   return (
-    <div
-      ref={ref}
-      className="h-[60vh] overflow-y-auto rounded-xl border border-[hsl(var(--border))] p-4 space-y-2 text-sm leading-relaxed"
-    >
+    <div ref={ref} className="kursu-transcript-panel h-[60vh] overflow-y-auto space-y-3">
       {segs.length === 0 && !interim && (
-        <p className="text-[hsl(var(--muted-foreground))]">Transkript henüz başlamadı.</p>
+        <p className="text-muted-foreground text-sm">{t('live.transcript.empty')}</p>
       )}
       {segs.map((s) => (
-        <p key={s.key}>
-          <span className="text-[hsl(var(--muted-foreground))] font-mono text-xs mr-2">[{s.t}]</span>
+        <p key={s.key} className="text-[hsl(var(--body))]">
+          <span className="font-mono text-xs text-muted-foreground mr-2 tabular-nums">[{s.t}]</span>
           {s.content}
         </p>
       ))}
       {interim && (
-        <p className="opacity-60 italic">
-          <span className="text-[hsl(var(--muted-foreground))] font-mono text-xs mr-2">[...]</span>
+        <p className="text-muted-foreground italic">
+          <span className="font-mono text-xs mr-2">[...]</span>
           {interim}
         </p>
       )}

@@ -34,22 +34,28 @@ export function TeacherNewLecture() {
   }
 
   return (
-    <Card className="max-w-xl mx-auto">
+    <Card className="max-w-xl mx-auto kursu-feature-card">
       <CardHeader>
-        <CardTitle>{t('teacher.new.title')}</CardTitle>
+        <CardTitle className="font-display text-2xl">{t('teacher.new.title')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={submit} className="space-y-4">
           <div>
-            <label className="text-xs font-medium">{t('teacher.new.field.title')}</label>
+            <label className="block text-sm font-medium text-foreground mb-1.5">
+              {t('teacher.new.field.title')}
+            </label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} required />
           </div>
           <div>
-            <label className="text-xs font-medium">{t('teacher.new.field.subject')}</label>
+            <label className="block text-sm font-medium text-foreground mb-1.5">
+              {t('teacher.new.field.subject')}
+            </label>
             <Input value={subject} onChange={(e) => setSubject(e.target.value)} required />
           </div>
           <div>
-            <label className="text-xs font-medium">{t('teacher.new.field.description')}</label>
+            <label className="block text-sm font-medium text-foreground mb-1.5">
+              {t('teacher.new.field.description')}
+            </label>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
           </div>
           <Button type="submit" disabled={busy}>

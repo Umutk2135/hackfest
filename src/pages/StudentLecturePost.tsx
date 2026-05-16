@@ -35,8 +35,8 @@ export function StudentLecturePost() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold">{lecture.title}</h1>
-        <p className="text-sm text-[hsl(var(--muted-foreground))]">
+        <h1 className="font-display text-2xl font-medium">{lecture.title}</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
           Ders bitti — yine de soru sorabilirsiniz.
         </p>
       </div>

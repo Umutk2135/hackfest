@@ -98,9 +98,9 @@ export function NoteUploader({ lectureId, onUploaded }: Props) {
           className={`rounded-lg border-2 border-dashed p-8 text-center text-sm ${dragOver ? 'border-[hsl(var(--primary))] bg-[hsl(var(--primary))]/5' : 'border-[hsl(var(--border))]'}`}
         >
           <Upload className="h-6 w-6 mx-auto mb-2 text-[hsl(var(--muted-foreground))]" />
-          PDF dosyasını buraya sürükleyin veya
+          Dosyayı buraya sürükleyin veya
           <label className="ml-1 text-[hsl(var(--primary))] cursor-pointer underline">
-            dosya seçin
+            seçin
             <input
               type="file"
               accept="application/pdf"

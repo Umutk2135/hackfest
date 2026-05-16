@@ -1,6 +1,5 @@
 /**
- * OWNER: P1 (Frontend)
- * One row in the teacher question panel.
+ * OWNER: P1 (Frontend) — teacher-question-row per DESIGN.md
  */
 import { useState } from 'react';
 import { Check, Flag, MessageSquare } from 'lucide-react';
@@ -9,9 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+import { cn } from '@/lib/cn';
 import type { Question, QuestionStatus } from '@shared/types';
 
-const STATUS: Record<QuestionStatus, { label: string; variant: 'success' | 'warning' | 'secondary' | 'outline' }> = {
+const STATUS: Record<
+  QuestionStatus,
+  { label: string; variant: 'success' | 'warning' | 'secondary' | 'outline' }
+> = {
   pending: { label: 'Bekliyor', variant: 'secondary' },
   answered_by_ai: { label: 'AI cevapladı', variant: 'success' },
   flagged_for_teacher: { label: 'Öğretmene iletildi', variant: 'warning' },
@@ -23,6 +26,7 @@ export function QuestionRow({ question }: { question: Question }) {
   const [resp, setResp] = useState('');
   const [busy, setBusy] = useState(false);
   const info = STATUS[question.status];
+  const flagged = question.status === 'flagged_for_teacher';
 
   async function send() {
     if (!resp.trim()) return;
@@ -40,22 +44,29 @@ export function QuestionRow({ question }: { question: Question }) {
   }
 
   return (
-    <li className="rounded-lg border border-[hsl(var(--border))] p-3 space-y-2">
+    <li
+      className={cn(
+        'rounded-md p-4 space-y-2 border',
+        flagged
+          ? 'bg-[#faf0e8] border-[hsl(var(--warm))]'
+          : 'bg-[hsl(var(--surface-soft))] border-border',
+      )}
+    >
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-medium flex-1">{question.questionText}</p>
+        <p className="text-sm font-medium flex-1 leading-snug">{question.questionText}</p>
         <Badge variant={info.variant}>
-          {question.status === 'flagged_for_teacher' && <Flag className="h-3 w-3 mr-1" />}
+          {flagged && <Flag className="h-3 w-3 mr-1" />}
           {question.status === 'answered_by_ai' && <Check className="h-3 w-3 mr-1" />}
           {info.label}
         </Badge>
       </div>
       {question.aiAnswer && (
-        <p className="text-xs text-[hsl(var(--muted-foreground))]">{question.aiAnswer}</p>
+        <p className="text-xs text-muted-foreground leading-relaxed">{question.aiAnswer}</p>
       )}
-      {question.status === 'flagged_for_teacher' && (
+      {flagged && (
         <>
           {!open && (
-            <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+            <Button variant="teacher" size="sm" onClick={() => setOpen(true)}>
               <MessageSquare className="h-3 w-3" />
               Cevapla
             </Button>
@@ -69,7 +80,7 @@ export function QuestionRow({ question }: { question: Question }) {
                 placeholder="Öğrenciye yanıtınız..."
               />
               <div className="flex gap-2">
-                <Button size="sm" onClick={send} disabled={busy}>
+                <Button size="sm" variant="teacher" onClick={send} disabled={busy}>
                   Gönder
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>

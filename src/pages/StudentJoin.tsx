@@ -24,9 +24,9 @@ export function StudentJoin() {
   }
 
   return (
-    <Card className="max-w-md mx-auto w-full">
+    <Card className="max-w-md mx-auto w-full kursu-feature-card">
       <CardHeader>
-        <CardTitle>{t('student.join.title')}</CardTitle>
+        <CardTitle className="font-display text-2xl">{t('student.join.title')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={submit} className="space-y-4">

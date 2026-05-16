@@ -1,5 +1,5 @@
 /**
- * OWNER: P1 (Frontend) — shadcn-style Card primitives.
+ * OWNER: P1 (Frontend) — Kürsü card surfaces
  */
 import { forwardRef, type HTMLAttributes } from 'react';
 import { cn } from '@/lib/cn';
@@ -12,7 +12,7 @@ export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(f
     <div
       ref={ref}
       className={cn(
-        'rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] shadow-sm',
+        'rounded-lg border border-border bg-card text-card-foreground',
         className,
       )}
       {...props}
@@ -29,18 +29,23 @@ export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEleme
 export const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadingElement>>(
   function CardTitle({ className, ...props }, ref) {
     return (
-      <h3 ref={ref} className={cn('text-lg font-semibold leading-none tracking-tight', className)} {...props} />
+      <h3
+        ref={ref}
+        className={cn('font-display text-lg font-medium leading-snug tracking-tight', className)}
+        {...props}
+      />
     );
   },
 );
 
-export const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLParagraphElement>>(
-  function CardDescription({ className, ...props }, ref) {
-    return (
-      <p ref={ref} className={cn('text-sm text-[hsl(var(--muted-foreground))]', className)} {...props} />
-    );
-  },
-);
+export const CardDescription = forwardRef<
+  HTMLParagraphElement,
+  HTMLAttributes<HTMLParagraphElement>
+>(function CardDescription({ className, ...props }, ref) {
+  return (
+    <p ref={ref} className={cn('text-sm text-muted-foreground leading-relaxed', className)} {...props} />
+  );
+});
 
 export const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   function CardContent({ className, ...props }, ref) {

@@ -9,8 +9,6 @@ export const tr = {
   'app.tagline': 'Derse kulak veren AI öğretim asistanı',
   'app.role.teacher': 'Öğretmen',
   'app.role.student': 'Öğrenci',
-  'app.theme.light': 'Aydınlık',
-  'app.theme.dark': 'Karanlık',
   'app.mock.banner': 'Mock API — veriler yerel bellekte; sunucu gerekmez',
 
   // Landing
@@ -35,7 +33,7 @@ export const tr = {
   // Lecture detail (pre-live)
   'teacher.detail.upload': 'Notları yükle',
   'teacher.detail.upload.paste': 'Metin yapıştır',
-  'teacher.detail.upload.pdf': 'PDF yükle',
+  'teacher.detail.upload.pdf': 'Dosya yükle',
   'teacher.detail.start': 'Canlı oturumu başlat',
 
   // Live session

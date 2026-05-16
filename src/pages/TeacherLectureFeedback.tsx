@@ -19,7 +19,7 @@ export function TeacherLectureFeedback() {
   if (loading || !report) {
     return (
       <div className="space-y-4">
-        <h1 className="text-xl font-semibold">{t('feedback.generating')}</h1>
+        <h1 className="font-display text-2xl font-medium">{t('feedback.generating')}</h1>
         <div className="grid grid-cols-3 gap-4">
           <Skeleton className="h-40" />
           <Skeleton className="h-40" />
@@ -31,12 +31,23 @@ export function TeacherLectureFeedback() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">{t('feedback.title')}</h1>
+      <h1 className="font-display text-3xl font-medium">{t('feedback.title')}</h1>
 
-      <div className="grid grid-cols-3 gap-4">
-        <ScoreRing score={report.overallClarityScore} label={t('feedback.scores.clarity')} />
-        <ScoreRing score={report.overallPacingScore} label={t('feedback.scores.pacing')} />
-        <ScoreRing score={report.overallEngagementScore} label={t('feedback.scores.engagement')} />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {(
+          [
+            [report.overallClarityScore, t('feedback.scores.clarity')],
+            [report.overallPacingScore, t('feedback.scores.pacing')],
+            [report.overallEngagementScore, t('feedback.scores.engagement')],
+          ] as const
+        ).map(([score, label]) => (
+          <div
+            key={label}
+            className="kursu-feature-card rounded-lg border border-border bg-card p-6 flex justify-center"
+          >
+            <ScoreRing score={score} label={label} />
+          </div>
+        ))}
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">

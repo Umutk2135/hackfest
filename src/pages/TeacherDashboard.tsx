@@ -27,8 +27,8 @@ export function TeacherDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">{t('teacher.dashboard.title')}</h1>
-        <Button className="inline-flex">
+        <h1 className="font-display text-3xl font-medium">{t('teacher.dashboard.title')}</h1>
+        <Button variant="default" className="inline-flex">
           <Link to="/teacher/lectures/new" className="inline-flex items-center gap-2">
             <Plus className="h-4 w-4" />
             {t('teacher.dashboard.new')}

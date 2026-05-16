@@ -1,10 +1,10 @@
 /**
  * OWNER: P1 (Frontend)
- * "/teacher/lectures/:id/live" — live session view.
  */
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { SessionCodeDisplay } from '@/components/lecture/SessionCodeDisplay';
 import { LiveTranscriptStream } from '@/components/live/LiveTranscriptStream';
 import { TeacherQuestionPanel } from '@/components/live/TeacherQuestionPanel';
@@ -12,6 +12,7 @@ import { MicPermissionGate } from '@/components/live/MicPermissionGate';
 import { useTranscriptStream } from '@/hooks/useTranscriptStream';
 import { useLecture } from '@/hooks/useLecture';
 import { api } from '@/lib/api';
+import { t } from '@/lib/i18n';
 import { toast } from 'sonner';
 
 export function TeacherLectureLive() {
@@ -42,13 +43,21 @@ export function TeacherLectureLive() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold">{lecture.title}</h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">{lecture.subject}</p>
+          <div className="flex items-center gap-2 mb-1">
+            <Badge variant="live">Canlı</Badge>
+          </div>
+          <h1 className="font-display text-2xl font-medium">{lecture.title}</h1>
+          <p className="text-sm text-muted-foreground">{lecture.subject}</p>
         </div>
-        <Button variant="destructive" onClick={end} disabled={busy}>
-          Oturumu sonlandır
+        <Button
+          variant="outline"
+          onClick={end}
+          disabled={busy}
+          className="border-destructive text-destructive hover:bg-destructive/10"
+        >
+          {t('live.end')}
         </Button>
       </div>
 
@@ -71,7 +80,7 @@ export function TeacherLectureLive() {
             localSegments={stream.localSegments}
           />
         </div>
-        <div>
+        <div className="rounded-lg border border-border bg-[hsl(var(--surface-soft))] p-4">
           <TeacherQuestionPanel lectureId={lecture.id} />
         </div>
       </div>
