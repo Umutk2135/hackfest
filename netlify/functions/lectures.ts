@@ -37,7 +37,7 @@ async function list(): Promise<Response> {
 async function create(req: Request): Promise<Response> {
   const body = await readJson<CreateLectureRequest>(req);
   if (!body.title || !body.subject) return error('bad_request', 'title and subject required', 400);
-  const sessionCode = generateSessionCode();
+  const sessionCode = await generateUniqueSessionCode();
   const [row] = await db()
     .insert(lectures)
     .values({
@@ -55,6 +55,19 @@ async function create(req: Request): Promise<Response> {
     status: row.status,
   };
   return json(resp, 201);
+}
+
+async function generateUniqueSessionCode(): Promise<string> {
+  for (let i = 0; i < 20; i++) {
+    const candidate = generateSessionCode();
+    const [existing] = await db()
+      .select({ id: lectures.id })
+      .from(lectures)
+      .where(eq(lectures.sessionCode, candidate))
+      .limit(1);
+    if (!existing) return candidate;
+  }
+  throw new Error('failed to allocate unique session code');
 }
 
 function generateSessionCode(): string {

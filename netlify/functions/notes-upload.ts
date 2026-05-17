@@ -67,7 +67,7 @@ export default async function handler(req: Request) {
 
   // Trigger background embedding (fire-and-forget).
   const url = new URL(req.url);
-  const bgUrl = `${url.origin}/.netlify/functions/background-embed-notes`;
+  const bgUrl = `${url.origin}/.netlify/functions/embed-notes-background`;
   fetch(bgUrl, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },

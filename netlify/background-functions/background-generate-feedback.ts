@@ -94,4 +94,4 @@ export default async function handler(req: Request) {
   });
 }
 
-export const config = { path: '/.netlify/functions/background-generate-feedback' };
+export const config = { path: '/.netlify/functions/generate-feedback-background' };

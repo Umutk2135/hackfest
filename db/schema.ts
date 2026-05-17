@@ -101,6 +101,7 @@ export const noteChunks = pgTable(
   },
   (t) => ({
     lectureIdx: index('note_chunks_lecture_idx').on(t.lectureId),
+    noteChunkUidx: uniqueIndex('note_chunks_note_chunk_uidx').on(t.sourceNoteId, t.chunkIndex),
   }),
 );
 

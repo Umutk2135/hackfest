@@ -28,6 +28,11 @@ export function useSpeechRecognition(opts: Options = {}) {
   const [interim, setInterim] = useState('');
   const recogRef = useRef<SpeechRecognition | null>(null);
   const wantRunningRef = useRef(false);
+  const statusRef = useRef<SpeechStatus>('idle');
+
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
 
   useEffect(() => {
     const Ctor = window.SpeechRecognition ?? window.webkitSpeechRecognition;
@@ -68,9 +73,10 @@ export function useSpeechRecognition(opts: Options = {}) {
     };
     recog.onend = () => {
       // Auto-restart so single-shot stops don't kill the session mid-lecture.
-      if (wantRunningRef.current && status !== 'denied') {
+      if (wantRunningRef.current && statusRef.current !== 'denied') {
         try {
           recog.start();
+          setStatus('listening');
         } catch {
           // Already started — ignore.
         }

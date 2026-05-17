@@ -12,7 +12,7 @@
  */
 import { eq } from 'drizzle-orm';
 import { db } from '../../db/client';
-import { questions, lectures } from '../../db/schema';
+import { questions, lectures, studentSessions } from '../../db/schema';
 import {
   badRequest,
   notFound,
@@ -38,12 +38,27 @@ export default async function handler(req: Request) {
   }
 
   const body = await readJson<AskQuestionRequest>(req);
-  if (!body.studentSessionId || !body.questionText) {
+  if (!body.studentSessionId || !body.questionText?.trim()) {
     return badRequest('studentSessionId and questionText required');
+  }
+  if (body.questionText.length > 1500) {
+    return errorResponse('too_large', 'questionText too large', 413);
   }
 
   const [lecture] = await db().select().from(lectures).where(eq(lectures.id, lectureId)).limit(1);
   if (!lecture) return notFound('lecture not found');
+  if (lecture.status === 'draft') {
+    return errorResponse('invalid_state', 'lecture has not started', 409);
+  }
+
+  const [session] = await db()
+    .select({ id: studentSessions.id, lectureId: studentSessions.lectureId })
+    .from(studentSessions)
+    .where(eq(studentSessions.id, body.studentSessionId))
+    .limit(1);
+  if (!session || session.lectureId !== lectureId) {
+    return errorResponse('invalid_student_session', 'student session does not belong to lecture', 403);
+  }
 
   // Create the question row up-front so polling endpoints can see it.
   const [questionRow] = await db()

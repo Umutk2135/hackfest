@@ -11,6 +11,9 @@ build/
 netlify/functions/background-embed-notes.ts
 netlify/functions/background-embed-transcript.ts
 netlify/functions/background-generate-feedback.ts
+netlify/functions/embed-notes-background.ts
+netlify/functions/embed-transcript-background.ts
+netlify/functions/generate-feedback-background.ts
 
 # Env
 .env

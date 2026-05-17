@@ -4,6 +4,7 @@
 -- but the pgvector extension + HNSW indexes at the bottom MUST be preserved.
 
 CREATE EXTENSION IF NOT EXISTS vector;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- ---------- enums ----------
 DO $$ BEGIN
@@ -57,6 +58,8 @@ CREATE TABLE IF NOT EXISTS note_chunks (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS note_chunks_lecture_idx ON note_chunks(lecture_id);
+CREATE UNIQUE INDEX IF NOT EXISTS note_chunks_note_chunk_uidx
+  ON note_chunks(source_note_id, chunk_index);
 
 CREATE TABLE IF NOT EXISTS transcript_segments (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

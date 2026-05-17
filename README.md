@@ -56,3 +56,7 @@ See `/Users/AhmetKilic/.claude/plans/claude-code-plan-unified-knuth.md` for the 
 ## Privacy
 
 No audio is uploaded. The teacher's browser transcribes locally via the Web Speech API and posts the resulting text. Students see a consent line on the join page.
+
+## Deployment
+
+See `docs/deployment.md`. Background jobs are generated into `netlify/functions/*-background.ts` by `npm run sync:bg`; this naming is required for Netlify Background Functions.

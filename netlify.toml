@@ -13,8 +13,8 @@
   # Default to 26s timeout (Netlify Pro). Background functions run separately with 15min budget.
   external_node_modules = ["@neondatabase/serverless", "pdf-parse"]
 
-[functions."background-*"]
-  # Background functions live in their own directory.
+[functions."*-background"]
+  # Netlify treats functions with the -background suffix as background functions.
 
 [dev]
   command = "npm run dev:vite"

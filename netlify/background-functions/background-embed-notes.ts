@@ -47,7 +47,8 @@ export default async function handler(req: Request) {
         embedding: vectors[i]!,
         pageReference: c.pageReference ?? null,
       })),
-    );
+    )
+    .onConflictDoNothing({ target: [noteChunks.sourceNoteId, noteChunks.chunkIndex] });
 
   return new Response(JSON.stringify({ ok: true, chunks: chunks.length }), {
     status: 200,
@@ -55,4 +56,4 @@ export default async function handler(req: Request) {
   });
 }
 
-export const config = { path: '/.netlify/functions/background-embed-notes' };
+export const config = { path: '/.netlify/functions/embed-notes-background' };

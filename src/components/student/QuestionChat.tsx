@@ -1,7 +1,7 @@
 /**
  * OWNER: P1 (Frontend) — question-chat-panel per DESIGN.md
  */
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,10 +40,11 @@ export function QuestionChat({ lectureId, studentSessionId }: Props) {
     await ask(studentSessionId, q);
   }
 
-  if (state.status === 'done' && state.text) {
+  useEffect(() => {
+    if (state.status !== 'done' || !state.text) return;
     setHistory((h) => [...h, { role: 'ai', text: state.text, citations: state.citations }]);
     reset();
-  }
+  }, [reset, state.citations, state.status, state.text]);
 
   return (
     <div className="kursu-chat-panel h-[60vh] flex flex-col">
