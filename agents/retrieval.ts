@@ -1,9 +1,10 @@
 /**
  * OWNER: P3 (AI)
- * RAG retrieval: pgvector top-K over notes + transcript chunks for a given lecture.
+ * RAG retrieval: cosine top-K over notes + transcript chunks for a given lecture.
  */
-import { sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { db } from '../db/client';
+import { noteChunks, transcriptSegments } from '../db/schema';
 import { embedQuery } from './embedding';
 import { mmss } from './prompts/shared';
 import type { Citation } from '../shared/types';
@@ -34,55 +35,42 @@ export async function retrieve(
   const k = opts.k ?? 5;
   const minScore = opts.minScore ?? 0.2;
   const queryVec = await embedQuery(query);
-  const vecLiteral = `[${queryVec.join(',')}]`;
 
   const conn = db();
   const promises: Array<Promise<RetrievedChunk[]>> = [];
   if (!opts.transcriptOnly) {
     promises.push(
-      conn.execute(sql`
-        SELECT id::text AS chunk_id,
-               content,
-               page_reference,
-               1 - (embedding <=> ${vecLiteral}::vector) AS score
-        FROM note_chunks
-        WHERE lecture_id = ${lectureId}
-        ORDER BY embedding <=> ${vecLiteral}::vector
-        LIMIT ${k}
-      `).then((r) =>
-        (r.rows as Array<{ chunk_id: string; content: string; page_reference: string | null; score: number }>).map(
-          (row) => ({
-            chunk_id: row.chunk_id,
+      conn
+        .select()
+        .from(noteChunks)
+        .where(eq(noteChunks.lectureId, lectureId))
+        .then((rows) =>
+          rows.map((row) => ({
+            chunk_id: row.id,
             source_type: 'note' as const,
-            reference: row.page_reference ?? 'not',
+            reference: row.pageReference ?? 'not',
             content: row.content,
-            score: Number(row.score),
-          }),
+            score: cosineSimilarity(queryVec, row.embedding),
+          })),
         ),
-      ),
     );
   }
   promises.push(
-    conn.execute(sql`
-      SELECT id::text AS chunk_id,
-             content,
-             start_time_seconds,
-             1 - (embedding <=> ${vecLiteral}::vector) AS score
-      FROM transcript_segments
-      WHERE lecture_id = ${lectureId} AND embedding IS NOT NULL
-      ORDER BY embedding <=> ${vecLiteral}::vector
-      LIMIT ${k}
-    `).then((r) =>
-      (r.rows as Array<{ chunk_id: string; content: string; start_time_seconds: number; score: number }>).map(
-        (row) => ({
-          chunk_id: row.chunk_id,
+    conn
+      .select()
+      .from(transcriptSegments)
+      .where(eq(transcriptSegments.lectureId, lectureId))
+      .then((rows) =>
+        rows
+          .filter((row) => row.embedding !== null)
+          .map((row) => ({
+          chunk_id: row.id,
           source_type: 'transcript' as const,
-          reference: mmss(row.start_time_seconds),
+          reference: mmss(row.startTimeSeconds),
           content: row.content,
-          score: Number(row.score),
-        }),
+          score: cosineSimilarity(queryVec, row.embedding!),
+        })),
       ),
-    ),
   );
 
   const results = (await Promise.all(promises)).flat();
@@ -90,6 +78,22 @@ export async function retrieve(
     .filter((c) => c.score >= minScore)
     .sort((a, b) => b.score - a.score)
     .slice(0, k);
+}
+
+function cosineSimilarity(a: number[], b: number[]): number {
+  if (a.length !== b.length || a.length === 0) return 0;
+  let dot = 0;
+  let normA = 0;
+  let normB = 0;
+  for (let i = 0; i < a.length; i++) {
+    const av = a[i] ?? 0;
+    const bv = b[i] ?? 0;
+    dot += av * bv;
+    normA += av * av;
+    normB += bv * bv;
+  }
+  if (normA === 0 || normB === 0) return 0;
+  return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
 /** Convert a retrieved chunk into the API Citation shape. */

@@ -25,6 +25,11 @@
 # ----- API REWRITES -----
 # REST endpoints
 [[redirects]]
+  from = "/api/health"
+  to = "/.netlify/functions/health"
+  status = 200
+
+[[redirects]]
   from = "/api/lectures"
   to = "/.netlify/functions/lectures"
   status = 200

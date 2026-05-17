@@ -76,7 +76,7 @@ export default async function handler(req: Request) {
     if (now - last >= EMBED_DEBOUNCE_MS) {
       lastEmbedTriggerMs.set(lectureId, now);
       const url = new URL(req.url);
-      fetch(`${url.origin}/.netlify/functions/embed-transcript-background`, {
+      await fetch(`${url.origin}/.netlify/functions/embed-transcript-background`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ lectureId }),

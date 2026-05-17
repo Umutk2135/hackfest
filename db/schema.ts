@@ -1,7 +1,7 @@
 /**
  * OWNER: P2 (Backend)
- * Drizzle ORM schema + pgvector custom type for embeddings.
- * The HNSW indexes are created in migrations/0000_initial.sql (Drizzle does not yet emit HNSW).
+ * Drizzle ORM schema.
+ * Embeddings are stored as jsonb arrays so Netlify Database can run without pgvector.
  */
 import {
   pgTable,
@@ -14,26 +14,12 @@ import {
   pgEnum,
   uniqueIndex,
   index,
-  customType,
 } from 'drizzle-orm/pg-core';
 import type {
   RouterDecision,
   Citation,
   FeedbackReport as FeedbackReportPayload,
 } from '../shared/types';
-
-// 1024-dimensional vector (voyage-3-large).
-export const vector = customType<{ data: number[]; driverData: string }>({
-  dataType() {
-    return 'vector(1024)';
-  },
-  toDriver(value) {
-    return `[${value.join(',')}]`;
-  },
-  fromDriver(value) {
-    return (value as string).replace(/^\[|\]$/g, '').split(',').map(Number);
-  },
-});
 
 // ---- enums ----
 export const lectureStatus = pgEnum('lecture_status', ['draft', 'live', 'ended']);
@@ -95,7 +81,7 @@ export const noteChunks = pgTable(
       .references(() => lectureNotes.id, { onDelete: 'cascade' }),
     chunkIndex: integer('chunk_index').notNull(),
     content: text('content').notNull(),
-    embedding: vector('embedding').notNull(),
+    embedding: jsonb('embedding').notNull().$type<number[]>(),
     pageReference: text('page_reference'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -116,7 +102,7 @@ export const transcriptSegments = pgTable(
     content: text('content').notNull(),
     startTimeSeconds: integer('start_time_seconds').notNull(),
     endTimeSeconds: integer('end_time_seconds').notNull(),
-    embedding: vector('embedding'),
+    embedding: jsonb('embedding').$type<number[]>(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => ({

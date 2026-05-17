@@ -26,8 +26,9 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.40.0",
-    "@netlify/functions": "^2.8.2",
     "@neondatabase/serverless": "^0.10.4",
+    "@netlify/database": "^1.0.0",
+    "@netlify/functions": "^2.8.2",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-slot": "^1.1.0",

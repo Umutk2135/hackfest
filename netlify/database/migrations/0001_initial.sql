@@ -1,8 +1,6 @@
 -- OWNER: P2 (Backend)
--- Initial schema for Kürsü. Idempotent.
--- Run via `npm run db:migrate`.
+-- Initial Netlify Database migration. Keep in sync with db/migrations/0000_initial.sql.
 
--- ---------- enums ----------
 DO $$ BEGIN
   CREATE TYPE lecture_status AS ENUM ('draft', 'live', 'ended');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
@@ -17,7 +15,6 @@ DO $$ BEGIN
   );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
--- ---------- tables ----------
 CREATE TABLE IF NOT EXISTS lectures (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   teacher_id text NOT NULL,
@@ -114,4 +111,3 @@ CREATE TABLE IF NOT EXISTS feedback_reports (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS feedback_reports_lecture_uidx
   ON feedback_reports(lecture_id);
-
