@@ -19,7 +19,7 @@ export function LiveTranscriptStream({ lectureId, source, interim, localSegments
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (source !== 'server') return;
+    if (!lectureId) return;
     let cancelled = false;
     let lastIndex = -1;
     async function tick() {
@@ -27,9 +27,9 @@ export function LiveTranscriptStream({ lectureId, source, interim, localSegments
         try {
           const res = await api.getTranscript(lectureId, lastIndex);
           if (!cancelled && res.segments.length) {
-            setServerSegments((prev) => [...prev, ...res.segments]);
-            lastIndex = res.latestIndex;
+            setServerSegments((prev) => mergeServerSegments(prev, res.segments));
           }
+          lastIndex = Math.max(lastIndex, res.latestIndex);
         } catch {
           // soft fail
         }
@@ -46,18 +46,7 @@ export function LiveTranscriptStream({ lectureId, source, interim, localSegments
     ref.current?.scrollTo({ top: ref.current.scrollHeight, behavior: 'smooth' });
   }, [serverSegments, localSegments, interim]);
 
-  const segs =
-    source === 'mic'
-      ? (localSegments ?? []).map((s) => ({
-          key: `m${s.index}`,
-          t: mmss(s.startSec),
-          content: s.content,
-        }))
-      : serverSegments.map((s) => ({
-          key: s.id,
-          t: mmss(s.startTimeSeconds),
-          content: s.content,
-        }));
+  const segs = buildSegments(serverSegments, source === 'mic' ? localSegments ?? [] : []);
 
   return (
     <div ref={ref} className="kursu-transcript-panel h-[60vh] overflow-y-auto space-y-3">
@@ -78,4 +67,34 @@ export function LiveTranscriptStream({ lectureId, source, interim, localSegments
       )}
     </div>
   );
+}
+
+function mergeServerSegments(prev: TranscriptSegment[], next: TranscriptSegment[]) {
+  const byIndex = new Map<number, TranscriptSegment>();
+  for (const segment of prev) byIndex.set(segment.segmentIndex, segment);
+  for (const segment of next) byIndex.set(segment.segmentIndex, segment);
+  return [...byIndex.values()].sort((a, b) => a.segmentIndex - b.segmentIndex);
+}
+
+function buildSegments(
+  serverSegments: TranscriptSegment[],
+  localSegments: Array<{ index: number; content: string; startSec: number; endSec: number }>,
+) {
+  const serverIndexes = new Set(serverSegments.map((s) => s.segmentIndex));
+  const server = serverSegments.map((s) => ({
+    key: s.id,
+    index: s.segmentIndex,
+    t: mmss(s.startTimeSeconds),
+    content: s.content,
+  }));
+  const localOnly = localSegments
+    .filter((s) => !serverIndexes.has(s.index))
+    .map((s) => ({
+      key: `m${s.index}`,
+      index: s.index,
+      t: mmss(s.startSec),
+      content: s.content,
+    }));
+
+  return [...server, ...localOnly].sort((a, b) => a.index - b.index);
 }

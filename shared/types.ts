@@ -44,6 +44,13 @@ export interface Lecture {
   endedAt: string | null;
 }
 
+export interface Teacher {
+  id: string;
+  name: string;
+  createdAt: string;
+  lastSeenAt: string;
+}
+
 export interface LectureNote {
   id: string;
   lectureId: string;
@@ -126,6 +133,15 @@ export interface FeedbackReport {
 
 export interface ApiError {
   error: { code: string; message: string };
+}
+
+// --- Teachers ---
+export interface RegisterTeacherRequest {
+  id: string;
+  name: string;
+}
+export interface RegisterTeacherResponse {
+  teacher: Teacher;
 }
 
 // --- Lectures ---

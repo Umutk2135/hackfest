@@ -7,6 +7,8 @@
 import type {
   CreateLectureRequest,
   CreateLectureResponse,
+  RegisterTeacherRequest,
+  RegisterTeacherResponse,
   ListLecturesResponse,
   GetLectureResponse,
   LectureByCodeResponse,
@@ -27,6 +29,7 @@ import type {
 } from '@shared/types';
 import { isMockApi } from '@/lib/mock/config';
 import { mockApi } from '@/lib/mock/api';
+import { teacherHeaders } from '@/lib/teacherProfile';
 
 export { isMockApi };
 
@@ -35,6 +38,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
     headers: {
       'content-type': 'application/json',
+      ...teacherHeaders(),
       ...(init?.headers ?? {}),
     },
   });
@@ -48,6 +52,11 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 const liveApi = {
+  registerTeacher: (body: RegisterTeacherRequest) =>
+    call<RegisterTeacherResponse>('/api/teachers/register', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
   listLectures: () => call<ListLecturesResponse>('/api/lectures'),
   createLecture: (body: CreateLectureRequest) =>
     call<CreateLectureResponse>('/api/lectures', {
@@ -64,7 +73,11 @@ const liveApi = {
   uploadNotesPdf: async (id: string, file: File): Promise<UploadNotesResponse> => {
     const form = new FormData();
     form.append('file', file);
-    const res = await fetch(`/api/lectures/${id}/notes`, { method: 'POST', body: form });
+    const res = await fetch(`/api/lectures/${id}/notes`, {
+      method: 'POST',
+      headers: teacherHeaders(),
+      body: form,
+    });
     if (!res.ok) throw new Error(`upload failed: ${res.status}`);
     return res.json() as Promise<UploadNotesResponse>;
   },

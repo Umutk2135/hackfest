@@ -7,7 +7,7 @@ import type { ApiError } from '../../../shared/types';
 const CORS_HEADERS = {
   'access-control-allow-origin': '*',
   'access-control-allow-methods': 'GET, POST, PATCH, OPTIONS',
-  'access-control-allow-headers': 'content-type, authorization',
+  'access-control-allow-headers': 'content-type, authorization, x-kursu-teacher-id, x-kursu-teacher-name',
 };
 
 export function json(body: unknown, status = 200): Response {

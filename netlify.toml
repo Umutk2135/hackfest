@@ -30,6 +30,11 @@
   status = 200
 
 [[redirects]]
+  from = "/api/teachers/register"
+  to = "/.netlify/functions/teachers"
+  status = 200
+
+[[redirects]]
   from = "/api/lectures"
   to = "/.netlify/functions/lectures"
   status = 200
@@ -76,15 +81,8 @@
 
 [[redirects]]
   from = "/api/lectures/:id/questions"
-  to = "/.netlify/functions/question-ask?id=:id"
+  to = "/.netlify/functions/lecture-questions?id=:id"
   status = 200
-  conditions = { Method = ["POST"] }
-
-[[redirects]]
-  from = "/api/lectures/:id/questions"
-  to = "/.netlify/functions/questions-list?id=:id"
-  status = 200
-  conditions = { Method = ["GET"] }
 
 [[redirects]]
   from = "/api/questions/:id/teacher-response"

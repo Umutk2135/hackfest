@@ -3,6 +3,7 @@
  */
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Mic, MicOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SessionCodeDisplay } from '@/components/lecture/SessionCodeDisplay';
@@ -41,6 +42,19 @@ export function TeacherLectureLive() {
     }
   }
 
+  function startTranscript() {
+    if (enabled) {
+      stream.start();
+      return;
+    }
+    setEnabled(true);
+  }
+
+  function stopTranscript() {
+    setEnabled(false);
+    stream.stop();
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -63,12 +77,38 @@ export function TeacherLectureLive() {
 
       <SessionCodeDisplay code={lecture.sessionCode} />
 
-      {!enabled ? (
+      {!enabled || stream.status === 'denied' || stream.status === 'unsupported' || stream.status === 'error' ? (
         <MicPermissionGate
-          status={stream.status === 'listening' ? 'idle' : stream.status}
+          status={stream.status}
           error={stream.error}
-          onStart={() => setEnabled(true)}
+          onStart={startTranscript}
         />
+      ) : null}
+
+      {stream.status === 'listening' ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[hsl(var(--live))]/30 bg-[hsl(var(--live-muted))] p-4">
+          <div>
+            <p className="text-sm font-medium text-[hsl(var(--live))]">Transkript aktif</p>
+            <p className="text-xs text-muted-foreground">
+              Mikrofon dinleniyor. İstediğiniz zaman durdurup tekrar devam ettirebilirsiniz.
+            </p>
+          </div>
+          <Button variant="outline" onClick={stopTranscript}>
+            <MicOff className="h-4 w-4" />
+            Transkripti durdur
+          </Button>
+        </div>
+      ) : enabled && stream.status === 'idle' ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-[hsl(var(--surface-soft))] p-4">
+          <div>
+            <p className="text-sm font-medium">Transkript duraklatıldı</p>
+            <p className="text-xs text-muted-foreground">Derse kaldığınız yerden devam edebilirsiniz.</p>
+          </div>
+          <Button variant="live" onClick={startTranscript}>
+            <Mic className="h-4 w-4" />
+            Transkripte devam et
+          </Button>
+        </div>
       ) : null}
 
       <div className="grid lg:grid-cols-3 gap-4">

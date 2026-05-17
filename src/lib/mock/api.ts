@@ -21,6 +21,8 @@ import type {
   TeacherRespondRequest,
   TeacherRespondResponse,
   GetFeedbackResponse,
+  RegisterTeacherRequest,
+  RegisterTeacherResponse,
 } from '@shared/types';
 import {
   addNote,
@@ -34,6 +36,12 @@ import {
 } from './store';
 
 export const mockApi = {
+  registerTeacher: async (body: RegisterTeacherRequest): Promise<RegisterTeacherResponse> => {
+    await delay(120);
+    const now = new Date().toISOString();
+    return { teacher: { id: body.id, name: body.name, createdAt: now, lastSeenAt: now } };
+  },
+
   listLectures: async (): Promise<ListLecturesResponse> => {
     await delay(200);
     const lectures = [...getStore().lectures.values()].sort(

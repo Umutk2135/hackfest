@@ -18,6 +18,14 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ---------- tables ----------
+CREATE TABLE IF NOT EXISTS teachers (
+  id text PRIMARY KEY,
+  name text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  last_seen_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS teachers_name_idx ON teachers(name);
+
 CREATE TABLE IF NOT EXISTS lectures (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   teacher_id text NOT NULL,

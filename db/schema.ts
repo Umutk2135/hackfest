@@ -32,6 +32,19 @@ export const questionStatus = pgEnum('question_status', [
 ]);
 
 // ---- tables ----
+export const teachers = pgTable(
+  'teachers',
+  {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    nameIdx: index('teachers_name_idx').on(t.name),
+  }),
+);
+
 export const lectures = pgTable(
   'lectures',
   {
@@ -191,6 +204,7 @@ export const feedbackReports = pgTable(
 // ---- inferred row types (handy for P2/P3) ----
 export type LectureRow = typeof lectures.$inferSelect;
 export type LectureInsert = typeof lectures.$inferInsert;
+export type TeacherRow = typeof teachers.$inferSelect;
 export type NoteRow = typeof lectureNotes.$inferSelect;
 export type NoteChunkRow = typeof noteChunks.$inferSelect;
 export type TranscriptRow = typeof transcriptSegments.$inferSelect;

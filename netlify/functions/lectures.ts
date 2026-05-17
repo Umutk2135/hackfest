@@ -19,16 +19,16 @@ import { SESSION_CODE_PREFIX } from '../../shared/types';
 
 export default async function handler(req: Request) {
   if (req.method === 'OPTIONS') return handleOptions();
-  if (req.method === 'GET') return list();
+  if (req.method === 'GET') return list(req);
   if (req.method === 'POST') return create(req);
   return methodNotAllowed();
 }
 
-async function list(): Promise<Response> {
+async function list(req: Request): Promise<Response> {
   const rows = await db()
     .select()
     .from(lectures)
-    .where(eq(lectures.teacherId, currentTeacherId()))
+    .where(eq(lectures.teacherId, currentTeacherId(req)))
     .orderBy(desc(lectures.createdAt));
   const body: ListLecturesResponse = { lectures: rows.map(rowToLecture) };
   return json(body);
@@ -41,7 +41,7 @@ async function create(req: Request): Promise<Response> {
   const [row] = await db()
     .insert(lectures)
     .values({
-      teacherId: currentTeacherId(),
+      teacherId: currentTeacherId(req),
       title: body.title,
       subject: body.subject,
       description: body.description ?? null,

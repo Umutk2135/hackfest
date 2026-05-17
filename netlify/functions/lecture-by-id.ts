@@ -6,6 +6,7 @@ import { eq, count } from 'drizzle-orm';
 import { db } from '../../db/client';
 import { lectures, lectureNotes, transcriptSegments, questions, noteChunks } from '../../db/schema';
 import { json, notFound, badRequest, getQueryParam, methodNotAllowed, handleOptions } from './_lib/response';
+import { currentTeacherId } from './_lib/auth';
 import type { GetLectureResponse, LectureNote } from '../../shared/types';
 
 export default async function handler(req: Request) {
@@ -17,6 +18,9 @@ export default async function handler(req: Request) {
   const conn = db();
   const [lecture] = await conn.select().from(lectures).where(eq(lectures.id, id)).limit(1);
   if (!lecture) return notFound('lecture not found');
+  if (req.headers.get('x-kursu-teacher-id') && lecture.teacherId !== currentTeacherId(req)) {
+    return notFound('lecture not found');
+  }
 
   const notes = await conn.select().from(lectureNotes).where(eq(lectureNotes.lectureId, id));
   const [transcriptCount] = await conn

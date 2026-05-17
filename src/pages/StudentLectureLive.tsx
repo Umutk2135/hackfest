@@ -24,6 +24,7 @@ export function StudentLectureLive() {
       try {
         const res = await api.getLectureByCode(code);
         setLecture(res.lecture);
+        if (res.lecture.status === 'draft') return;
         const name = window.localStorage.getItem('kursu:studentName') ?? 'Öğrenci';
         const join = await api.studentJoin(res.lecture.id, {
           studentName: name,
@@ -43,7 +44,7 @@ export function StudentLectureLive() {
       </div>
     );
   }
-  if (!lecture || !studentSessionId) {
+  if (!lecture || (lecture.status !== 'draft' && !studentSessionId)) {
     return <Skeleton className="h-[60vh]" />;
   }
 
@@ -62,7 +63,13 @@ export function StudentLectureLive() {
           <LiveTranscriptStream lectureId={lecture.id} source="server" />
         </div>
         <div className="lg:col-span-2">
-          <QuestionChat lectureId={lecture.id} studentSessionId={studentSessionId} />
+          {lecture.status === 'draft' || !studentSessionId ? (
+            <div className="kursu-chat-panel h-[60vh] flex items-center justify-center p-6 text-center text-sm text-muted-foreground">
+              Ders henüz başlatılmadı. Öğretmen canlı oturumu başlatınca soru sorabilirsiniz.
+            </div>
+          ) : (
+            <QuestionChat lectureId={lecture.id} studentSessionId={studentSessionId} />
+          )}
         </div>
       </div>
     </div>
