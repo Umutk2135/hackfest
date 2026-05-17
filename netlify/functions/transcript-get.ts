@@ -2,7 +2,7 @@
  * OWNER: P2 (Backend)
  * GET /api/lectures/:id/transcript?since=N  — incremental polling endpoint
  */
-import { and, asc, eq, gt } from 'drizzle-orm';
+import { and, asc, eq, gte, max } from 'drizzle-orm';
 import { db } from '../../db/client';
 import { transcriptSegments } from '../../db/schema';
 import {
@@ -26,9 +26,10 @@ export default async function handler(req: Request) {
     .select()
     .from(transcriptSegments)
     .where(
-      Number.isFinite(since)
-        ? and(eq(transcriptSegments.lectureId, lectureId), gt(transcriptSegments.segmentIndex, since))
-        : eq(transcriptSegments.lectureId, lectureId),
+      and(
+        eq(transcriptSegments.lectureId, lectureId),
+        since >= 0 ? gte(transcriptSegments.segmentIndex, since) : undefined,
+      ),
     )
     .orderBy(asc(transcriptSegments.segmentIndex));
 
@@ -41,7 +42,13 @@ export default async function handler(req: Request) {
     endTimeSeconds: r.endTimeSeconds,
     createdAt: r.createdAt.toISOString(),
   }));
-  const latestIndex = segments.length ? segments[segments.length - 1]!.segmentIndex : since;
+
+  const [maxRow] = await db()
+    .select({ latestIndex: max(transcriptSegments.segmentIndex) })
+    .from(transcriptSegments)
+    .where(eq(transcriptSegments.lectureId, lectureId));
+  const latestIndex =
+    maxRow?.latestIndex != null ? Number(maxRow.latestIndex) : since >= 0 ? since : -1;
 
   const body: TranscriptGetResponse = { segments, latestIndex };
   return json(body);

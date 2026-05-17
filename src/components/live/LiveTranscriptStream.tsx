@@ -25,11 +25,14 @@ export function LiveTranscriptStream({ lectureId, source, interim, localSegments
     async function tick() {
       while (!cancelled) {
         try {
-          const res = await api.getTranscript(lectureId, lastIndex);
+          const since = lastIndex < 0 ? -1 : lastIndex;
+          const res = await api.getTranscript(lectureId, since);
           if (!cancelled && res.segments.length) {
             setServerSegments((prev) => mergeServerSegments(prev, res.segments));
           }
-          lastIndex = Math.max(lastIndex, res.latestIndex);
+          if (!cancelled && res.latestIndex >= lastIndex) {
+            lastIndex = res.latestIndex;
+          }
         } catch {
           // soft fail
         }
@@ -72,7 +75,12 @@ export function LiveTranscriptStream({ lectureId, source, interim, localSegments
 function mergeServerSegments(prev: TranscriptSegment[], next: TranscriptSegment[]) {
   const byIndex = new Map<number, TranscriptSegment>();
   for (const segment of prev) byIndex.set(segment.segmentIndex, segment);
-  for (const segment of next) byIndex.set(segment.segmentIndex, segment);
+  for (const segment of next) {
+    const existing = byIndex.get(segment.segmentIndex);
+    if (!existing || segment.content.length >= existing.content.length) {
+      byIndex.set(segment.segmentIndex, segment);
+    }
+  }
   return [...byIndex.values()].sort((a, b) => a.segmentIndex - b.segmentIndex);
 }
 
@@ -80,21 +88,28 @@ function buildSegments(
   serverSegments: TranscriptSegment[],
   localSegments: Array<{ index: number; content: string; startSec: number; endSec: number }>,
 ) {
-  const serverIndexes = new Set(serverSegments.map((s) => s.segmentIndex));
-  const server = serverSegments.map((s) => ({
-    key: s.id,
-    index: s.segmentIndex,
-    t: mmss(s.startTimeSeconds),
-    content: s.content,
-  }));
-  const localOnly = localSegments
-    .filter((s) => !serverIndexes.has(s.index))
-    .map((s) => ({
-      key: `m${s.index}`,
-      index: s.index,
-      t: mmss(s.startSec),
-      content: s.content,
-    }));
+  const byIndex = new Map<number, { key: string; index: number; t: string; content: string }>();
 
-  return [...server, ...localOnly].sort((a, b) => a.index - b.index);
+  for (const s of serverSegments) {
+    byIndex.set(s.segmentIndex, {
+      key: s.id,
+      index: s.segmentIndex,
+      t: mmss(s.startTimeSeconds),
+      content: s.content,
+    });
+  }
+
+  for (const s of localSegments) {
+    const existing = byIndex.get(s.index);
+    if (!existing || s.content.length > existing.content.length) {
+      byIndex.set(s.index, {
+        key: existing?.key ?? `m${s.index}`,
+        index: s.index,
+        t: mmss(s.startSec),
+        content: s.content,
+      });
+    }
+  }
+
+  return [...byIndex.values()].sort((a, b) => a.index - b.index);
 }

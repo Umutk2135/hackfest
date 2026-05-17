@@ -136,7 +136,9 @@ export const mockApi = {
     await delay(100);
     const all = getStore().transcripts.get(id) ?? [];
     const segments =
-      since !== undefined ? all.filter((s) => s.segmentIndex > since) : [...all];
+      since !== undefined && since >= 0
+        ? all.filter((s) => s.segmentIndex >= since)
+        : [...all];
     const latestIndex = all.length ? Math.max(...all.map((s) => s.segmentIndex)) : -1;
     return { segments, latestIndex };
   },

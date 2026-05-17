@@ -16,6 +16,23 @@ function normalizeTranscript(text: string) {
   return text.trim().replace(/\s+/g, ' ');
 }
 
+const APPEND_RETRIES = 3;
+
+async function appendWithRetry(lectureId: string, body: Parameters<typeof api.appendTranscript>[1]) {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < APPEND_RETRIES; attempt += 1) {
+    try {
+      return await api.appendTranscript(lectureId, body);
+    } catch (err) {
+      lastError = err;
+      if (attempt < APPEND_RETRIES - 1) {
+        await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
+      }
+    }
+  }
+  throw lastError;
+}
+
 export function useTranscriptStream(opts: Options) {
   const startedAtRef = useRef<number | null>(null);
   const enabledRef = useRef(opts.enabled);
@@ -32,6 +49,27 @@ export function useTranscriptStream(opts: Options) {
   useEffect(() => {
     enabledRef.current = opts.enabled;
   }, [opts.enabled]);
+
+  useEffect(() => {
+    if (!opts.lectureId) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await api.getTranscript(opts.lectureId, -1);
+        if (cancelled) return;
+        const maxIndex = res.segments.reduce(
+          (max, segment) => Math.max(max, segment.segmentIndex),
+          res.latestIndex,
+        );
+        activeIndexRef.current = Math.max(activeIndexRef.current, maxIndex + 1);
+      } catch {
+        // Best effort; polling will still hydrate the transcript panel.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [opts.lectureId]);
 
   const persistSegment = useCallback(
     async (text: string, options: { advance?: boolean; force?: boolean } = {}) => {
@@ -63,16 +101,14 @@ export function useTranscriptStream(opts: Options) {
         [...prev.filter((item) => item.index !== segmentIndex), seg].sort((a, b) => a.index - b.index),
       );
 
-      const write = api
-        .appendTranscript(opts.lectureId, {
-          segmentIndex: seg.index,
-          content: seg.content,
-          startTimeSeconds: Math.floor(seg.startSec),
-          endTimeSeconds: Math.floor(seg.endSec),
-        })
-        .catch(() => {
-          // Best effort. The browser keeps a local copy; reload re-fetches from server.
-        });
+      const write = appendWithRetry(opts.lectureId, {
+        segmentIndex: seg.index,
+        content: seg.content,
+        startTimeSeconds: Math.floor(seg.startSec),
+        endTimeSeconds: Math.floor(seg.endSec),
+      }).catch(() => {
+        // Local copy remains; polling will reconcile once a later write succeeds.
+      });
 
       pendingWritesRef.current.push(write);
       write.finally(() => {
