@@ -99,10 +99,13 @@ const liveApi = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
-  listQuestions: (id: string, status?: QuestionStatus) =>
-    call<ListQuestionsResponse>(
-      `/api/lectures/${id}/questions${status ? `?status=${status}` : ''}`,
-    ),
+  listQuestions: (id: string, status?: QuestionStatus, studentSessionId?: string) => {
+    const params = new URLSearchParams();
+    if (status) params.set('status', status);
+    if (studentSessionId) params.set('studentSessionId', studentSessionId);
+    const query = params.toString();
+    return call<ListQuestionsResponse>(`/api/lectures/${id}/questions${query ? `?${query}` : ''}`);
+  },
   teacherRespond: (questionId: string, body: TeacherRespondRequest) =>
     call<TeacherRespondResponse>(`/api/questions/${questionId}/teacher-response`, {
       method: 'POST',

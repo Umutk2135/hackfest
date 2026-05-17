@@ -16,13 +16,14 @@ import { api } from '@/lib/api';
 import { t } from '@/lib/i18n';
 import { toast } from 'sonner';
 import type { Lecture } from '@shared/types';
+import { newTeacherId } from '@/lib/teacherProfile';
 
 export function TeacherDashboard() {
   const [lectures, setLectures] = useState<Lecture[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [teacherName, setTeacherName] = useState('');
   const [registering, setRegistering] = useState(false);
-  const { profile, createLocalProfile, saveProfile, clearProfile } = useTeacherProfile();
+  const { profile, saveProfile, clearProfile } = useTeacherProfile();
 
   useEffect(() => {
     if (!profile) return;
@@ -39,13 +40,13 @@ export function TeacherDashboard() {
     const name = teacherName.trim();
     if (!name || registering) return;
     setRegistering(true);
-    const local = createLocalProfile(name);
     try {
-      const res = await api.registerTeacher(local);
+      const res = await api.registerTeacher({ id: newTeacherId(), name });
       saveProfile({ id: res.teacher.id, name: res.teacher.name });
-      toast.success('Öğretmen kaydı oluşturuldu.');
+      toast.success(
+        res.resolvedExisting ? 'Mevcut öğretmen hesabı açıldı.' : 'Öğretmen kaydı oluşturuldu.',
+      );
     } catch (err) {
-      clearProfile();
       toast.error((err as Error).message);
     } finally {
       setRegistering(false);
@@ -72,10 +73,10 @@ export function TeacherDashboard() {
               />
             </div>
             <p className="text-sm text-muted-foreground">
-              Her öğretmenin dersleri ayrı tutulur. Bu demo kaydı bu tarayıcıda saklanır ve DB'ye yazılır.
+              Aynı isimle tekrar girerseniz mevcut öğretmen hesabınız ve eski dersleriniz açılır.
             </p>
             <Button type="submit" disabled={!teacherName.trim() || registering}>
-              {registering ? 'Kaydediliyor...' : 'Kaydol ve devam et'}
+              {registering ? 'Açılıyor...' : 'Devam et'}
             </Button>
           </form>
         </CardContent>

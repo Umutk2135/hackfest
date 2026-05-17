@@ -137,11 +137,12 @@ export interface ApiError {
 
 // --- Teachers ---
 export interface RegisterTeacherRequest {
-  id: string;
+  id?: string;
   name: string;
 }
 export interface RegisterTeacherResponse {
   teacher: Teacher;
+  resolvedExisting: boolean;
 }
 
 // --- Lectures ---

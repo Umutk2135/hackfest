@@ -31,28 +31,34 @@ import {
   createLectureInStore,
   delay,
   findLectureByCode,
+  findTeacherByName,
   getStore,
   setLectureStatus,
+  upsertTeacher,
 } from './store';
+import { readTeacherProfile } from '@/lib/teacherProfile';
 
 export const mockApi = {
   registerTeacher: async (body: RegisterTeacherRequest): Promise<RegisterTeacherResponse> => {
     await delay(120);
-    const now = new Date().toISOString();
-    return { teacher: { id: body.id, name: body.name, createdAt: now, lastSeenAt: now } };
+    const existing = findTeacherByName(body.name);
+    const teacher = upsertTeacher({ id: existing?.id ?? body.id ?? crypto.randomUUID(), name: body.name });
+    return { teacher, resolvedExisting: Boolean(existing) };
   },
 
   listLectures: async (): Promise<ListLecturesResponse> => {
     await delay(200);
-    const lectures = [...getStore().lectures.values()].sort(
-      (a, b) => b.createdAt.localeCompare(a.createdAt),
-    );
+    const teacherId = readTeacherProfile()?.id;
+    const lectures = [...getStore().lectures.values()]
+      .filter((lecture) => !teacherId || lecture.teacherId === teacherId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     return { lectures };
   },
 
   createLecture: async (body: CreateLectureRequest): Promise<CreateLectureResponse> => {
     await delay(300);
-    const lec = createLectureInStore(body);
+    const teacherId = readTeacherProfile()?.id ?? 'teacher_mock';
+    const lec = createLectureInStore({ ...body, teacherId });
     return { id: lec.id, sessionCode: lec.sessionCode, status: lec.status };
   },
 

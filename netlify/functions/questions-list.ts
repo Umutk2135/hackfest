@@ -20,10 +20,15 @@ export default async function handler(req: Request) {
   const lectureId = getQueryParam(req, 'id');
   if (!lectureId) return badRequest('id is required');
   const status = getQueryParam(req, 'status') as QuestionStatus | null;
+  const studentSessionId = getQueryParam(req, 'studentSessionId');
 
-  const where = status
-    ? and(eq(questions.lectureId, lectureId), eq(questions.status, status))
-    : eq(questions.lectureId, lectureId);
+  let where = eq(questions.lectureId, lectureId);
+  if (status) {
+    where = and(where, eq(questions.status, status))!;
+  }
+  if (studentSessionId) {
+    where = and(where, eq(questions.studentSessionId, studentSessionId))!;
+  }
 
   const rows = await db().select().from(questions).where(where).orderBy(desc(questions.askedAt));
 
