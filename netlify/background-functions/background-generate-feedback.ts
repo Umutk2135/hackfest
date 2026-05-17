@@ -112,6 +112,8 @@ export default async function handler(req: Request) {
       }).catch((err) => ({ skipped: true, reason: `email failed: ${(err as Error).message}` }))
     : { skipped: true, reason: 'report already existed' };
 
+  console.log('[feedback-email]', JSON.stringify({ lectureId, ...emailResult }));
+
   return new Response(JSON.stringify({ ok: true, ms: Date.now() - start, email: emailResult }), {
     status: 200,
     headers: { 'content-type': 'application/json' },
