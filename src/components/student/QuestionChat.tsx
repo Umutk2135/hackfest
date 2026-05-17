@@ -106,7 +106,7 @@ export function QuestionChat({ lectureId, studentSessionId }: Props) {
   }, [pendingQuestion, questions, studentSessionId]);
 
   return (
-    <div className="kursu-chat-panel h-[60vh] flex flex-col">
+    <div className="kursu-chat-panel min-h-[min(72vh,calc(100dvh-12rem))] h-[min(72vh,calc(100dvh-12rem))] flex flex-col">
       <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
         {history.length === 0 && state.status === 'idle' && (
           <p className="text-sm text-muted-foreground leading-relaxed">

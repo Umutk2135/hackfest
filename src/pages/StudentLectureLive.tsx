@@ -1,11 +1,10 @@
 /**
  * OWNER: P1 (Frontend)
- * "/student/lectures/:code" — live transcript + chat.
+ * "/student/lectures/:code" — live Q&A (transcript is teacher-only).
  */
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
-import { LiveTranscriptStream } from '@/components/live/LiveTranscriptStream';
 import { QuestionChat } from '@/components/student/QuestionChat';
 import { LectureStatusBadge } from '@/components/lecture/LectureStatusBadge';
 import { api } from '@/lib/api';
@@ -48,6 +47,8 @@ export function StudentLectureLive() {
     return <Skeleton className="h-[60vh]" />;
   }
 
+  const waitingForSession = lecture.status === 'draft' || !studentSessionId;
+
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between">
@@ -58,19 +59,14 @@ export function StudentLectureLive() {
         <LectureStatusBadge status={lecture.status} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        <div className="lg:col-span-3">
-          <LiveTranscriptStream lectureId={lecture.id} source="server" />
-        </div>
-        <div className="lg:col-span-2">
-          {lecture.status === 'draft' || !studentSessionId ? (
-            <div className="kursu-chat-panel h-[60vh] flex items-center justify-center p-6 text-center text-sm text-muted-foreground">
-              Ders henüz başlatılmadı. Öğretmen canlı oturumu başlatınca soru sorabilirsiniz.
-            </div>
-          ) : (
-            <QuestionChat lectureId={lecture.id} studentSessionId={studentSessionId} />
-          )}
-        </div>
+      <div className="max-w-2xl mx-auto w-full">
+        {waitingForSession ? (
+          <div className="kursu-chat-panel min-h-[min(72vh,calc(100dvh-12rem))] flex items-center justify-center p-6 text-center text-sm text-muted-foreground">
+            Ders henüz başlatılmadı. Öğretmen canlı oturumu başlatınca soru sorabilirsiniz.
+          </div>
+        ) : (
+          <QuestionChat lectureId={lecture.id} studentSessionId={studentSessionId} />
+        )}
       </div>
     </div>
   );

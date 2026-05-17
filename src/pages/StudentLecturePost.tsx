@@ -40,7 +40,9 @@ export function StudentLecturePost() {
           Ders bitti — yine de soru sorabilirsiniz.
         </p>
       </div>
-      <QuestionChat lectureId={lecture.id} studentSessionId={studentSessionId} />
+      <div className="max-w-2xl mx-auto w-full">
+        <QuestionChat lectureId={lecture.id} studentSessionId={studentSessionId} />
+      </div>
     </div>
   );
 }
