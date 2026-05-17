@@ -1,6 +1,6 @@
 # Kürsü
 
-> AI Teaching Assistant — HSIL Hackathon 2026
+> AI Teaching Assistant
 
 Live lecture platform. The teacher speaks; the AI listens, answers student questions from the lecture notes + transcript with inline citations, and produces a pedagogical feedback report after class.
 

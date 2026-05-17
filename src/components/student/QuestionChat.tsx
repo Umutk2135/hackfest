@@ -44,11 +44,39 @@ export function QuestionChat({ lectureId, studentSessionId }: Props) {
       setPendingQuestion(null);
       return;
     }
-    if (state.status !== 'done' || !state.finalQuestionId) return;
-    if (!questions.some((question) => question.id === state.finalQuestionId)) return;
+
+    const pollHasAnswer =
+      pendingQuestion != null &&
+      questions.some(
+        (question) =>
+          question.studentSessionId === studentSessionId &&
+          question.questionText === pendingQuestion &&
+          Boolean(question.aiAnswer ?? question.teacherResponse),
+      );
+
+    if (pollHasAnswer) {
+      setPendingQuestion(null);
+      reset();
+      return;
+    }
+
+    if (state.status !== 'done') return;
+    if (
+      state.finalQuestionId &&
+      !questions.some((question) => question.id === state.finalQuestionId)
+    ) {
+      return;
+    }
     setPendingQuestion(null);
     reset();
-  }, [questions, reset, state.finalQuestionId, state.status]);
+  }, [
+    pendingQuestion,
+    questions,
+    reset,
+    state.finalQuestionId,
+    state.status,
+    studentSessionId,
+  ]);
 
   const history = useMemo<HistoryItem[]>(() => {
     const items: HistoryItem[] = [];

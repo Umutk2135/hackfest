@@ -11,6 +11,6 @@ export function useQuestions(lectureId: string | undefined, studentSessionId?: s
       if (!lectureId) throw new Error('no id');
       return api.listQuestions(lectureId, undefined, studentSessionId);
     },
-    { intervalMs: 2000, enabled: Boolean(lectureId && (!studentSessionId || studentSessionId)) },
+    { intervalMs: 2000, enabled: Boolean(lectureId) },
   );
 }

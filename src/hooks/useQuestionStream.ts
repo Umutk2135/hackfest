@@ -117,6 +117,16 @@ export function useQuestionStream(lectureId: string) {
             }));
           }
         }
+
+        setState((s) => {
+          if (s.status !== 'streaming') return s;
+          if (s.text || s.finalQuestionId) return { ...s, status: 'done' };
+          return {
+            ...s,
+            status: 'error',
+            errorMessage: 'Yanıt akışı tamamlanamadı.',
+          };
+        });
       } catch (err) {
         setState((s) => ({
           ...s,
