@@ -1,14 +1,16 @@
 /**
  * OWNER: P1 (Frontend) — question-chat-panel per DESIGN.md
  */
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChatMessage } from './ChatMessage';
 import { AgentStatusIndicator } from '@/components/live/AgentStatusIndicator';
 import { useQuestionStream } from '@/hooks/useQuestionStream';
+import { useQuestions } from '@/hooks/useQuestions';
 import { t } from '@/lib/i18n';
+import type { Citation } from '@shared/types';
 
 interface Props {
   lectureId: string;
@@ -18,33 +20,62 @@ interface Props {
 interface HistoryItem {
   role: 'user' | 'ai';
   text: string;
-  citations?: {
-    source_type: 'note' | 'transcript';
-    reference: string;
-    snippet: string;
-    chunk_id: string;
-  }[];
+  citations?: Citation[];
 }
 
 export function QuestionChat({ lectureId, studentSessionId }: Props) {
   const [input, setInput] = useState('');
-  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [pendingQuestion, setPendingQuestion] = useState<string | null>(null);
   const { state, ask, reset } = useQuestionStream(lectureId);
+  const { data } = useQuestions(lectureId, studentSessionId);
+  const questions = data?.questions ?? [];
 
   async function submit(e: FormEvent) {
     e.preventDefault();
     const q = input.trim();
     if (!q || state.status === 'streaming') return;
-    setHistory((h) => [...h, { role: 'user', text: q }]);
+    setPendingQuestion(q);
     setInput('');
     await ask(studentSessionId, q);
   }
 
   useEffect(() => {
-    if (state.status !== 'done' || !state.text) return;
-    setHistory((h) => [...h, { role: 'ai', text: state.text, citations: state.citations }]);
+    if (state.status === 'error') {
+      setPendingQuestion(null);
+      return;
+    }
+    if (state.status !== 'done' || !state.finalQuestionId) return;
+    if (!questions.some((question) => question.id === state.finalQuestionId)) return;
+    setPendingQuestion(null);
     reset();
-  }, [reset, state.citations, state.status, state.text]);
+  }, [questions, reset, state.finalQuestionId, state.status]);
+
+  const history = useMemo<HistoryItem[]>(() => {
+    const items: HistoryItem[] = [];
+    for (const question of [...questions].reverse()) {
+      items.push({ role: 'user', text: question.questionText });
+      const answerText = question.teacherResponse ?? question.aiAnswer;
+      if (!answerText) continue;
+      items.push({
+        role: 'ai',
+        text: answerText,
+        citations: question.teacherResponse
+          ? undefined
+          : (question.aiAnswerCitations ?? []).filter((citation) => citation.source_type === 'note'),
+      });
+    }
+    if (
+      pendingQuestion &&
+      !questions.some(
+        (question) =>
+          question.questionText === pendingQuestion &&
+          question.studentSessionId === studentSessionId,
+      )
+    ) {
+      items.push({ role: 'user', text: pendingQuestion });
+    }
+    return items;
+  }, [pendingQuestion, questions, studentSessionId]);
 
   return (
     <div className="kursu-chat-panel h-[60vh] flex flex-col">

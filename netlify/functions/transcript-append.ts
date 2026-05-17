@@ -20,7 +20,7 @@ import {
 import type { TranscriptAppendRequest, TranscriptAppendResponse } from '../../shared/types';
 import { MAX_TRANSCRIPT_CHARS } from '../../shared/types';
 
-// Debounce state per cold-start. Each lecture's transcript embed is triggered at most every 60s.
+// Debounce state per cold-start. Transcript embedding is async only; ingestion never calls an LLM.
 const lastEmbedTriggerMs = new Map<string, number>();
 const EMBED_DEBOUNCE_MS = 60_000;
 
@@ -66,7 +66,15 @@ export default async function handler(req: Request) {
       startTimeSeconds: body.startTimeSeconds,
       endTimeSeconds: body.endTimeSeconds,
     })
-    .onConflictDoNothing()
+    .onConflictDoUpdate({
+      target: [transcriptSegments.lectureId, transcriptSegments.segmentIndex],
+      set: {
+        content: body.content,
+        startTimeSeconds: body.startTimeSeconds,
+        endTimeSeconds: body.endTimeSeconds,
+        embedding: null,
+      },
+    })
     .returning();
 
   if (row) {

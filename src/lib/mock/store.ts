@@ -12,6 +12,7 @@ import type {
   QuestionStatus,
 } from '@shared/types';
 import { DEMO_TEACHER_ID } from '@shared/types';
+import type { Teacher } from '@shared/types';
 
 export const DEMO_LECTURE_ID = '11111111-1111-4111-8111-111111111111';
 
@@ -22,6 +23,7 @@ const DEMO_TRANSCRIPT_LINES = [
 ];
 
 export interface MockStore {
+  teachers: Map<string, Teacher>;
   lectures: Map<string, Lecture>;
   notes: Map<string, LectureNote[]>;
   transcripts: Map<string, TranscriptSegment[]>;
@@ -60,6 +62,12 @@ export function createInitialStore(): MockStore {
   };
 
   const store: MockStore = {
+    teachers: new Map([
+      [
+        DEMO_TEACHER_ID,
+        { id: DEMO_TEACHER_ID, name: 'Demo Öğretmen', createdAt: now, lastSeenAt: now },
+      ],
+    ]),
     lectures: new Map([[demo.id, demo]]),
     notes: new Map(),
     transcripts: new Map(),
@@ -170,6 +178,7 @@ function buildFeedbackReport(lectureId: string): FeedbackReport {
 }
 
 export function createLectureInStore(input: {
+  teacherId: string;
   title: string;
   subject: string;
   description?: string;
@@ -179,7 +188,7 @@ export function createLectureInStore(input: {
   const now = isoNow();
   const lecture: Lecture = {
     id,
-    teacherId: DEMO_TEACHER_ID,
+    teacherId: input.teacherId,
     title: input.title,
     subject: input.subject,
     description: input.description ?? null,
@@ -195,6 +204,23 @@ export function createLectureInStore(input: {
   store.notes.set(id, []);
   store.transcripts.set(id, []);
   return lecture;
+}
+
+export function findTeacherByName(name: string): Teacher | undefined {
+  const normalized = name.trim().toLocaleLowerCase('tr-TR');
+  return [...store.teachers.values()].find(
+    (teacher) => teacher.name.trim().toLocaleLowerCase('tr-TR') === normalized,
+  );
+}
+
+export function upsertTeacher(input: { id: string; name: string }): Teacher {
+  const existing = findTeacherByName(input.name) ?? store.teachers.get(input.id);
+  const now = isoNow();
+  const teacher: Teacher = existing
+    ? { ...existing, name: input.name.trim(), lastSeenAt: now }
+    : { id: input.id, name: input.name.trim(), createdAt: now, lastSeenAt: now };
+  store.teachers.set(teacher.id, teacher);
+  return teacher;
 }
 
 export function addNote(

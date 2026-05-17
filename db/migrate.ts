@@ -12,7 +12,10 @@ import { getConnectionString } from '@netlify/database';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 async function main() {
-  const url = process.env.NETLIFY_DATABASE_URL ?? getConnectionString();
+  const url =
+    process.env.NETLIFY_DB_URL ??
+    process.env.NETLIFY_DATABASE_URL ??
+    getConnectionString();
   if (!url) throw new Error('Database connection string is not set');
 
   const pool = new Pool({ connectionString: url });

@@ -119,18 +119,20 @@ function parseFinal(
       confidence: number;
       citations: Citation[];
     };
-    // Drop any hallucinated citations whose chunk_id is not in retrieved context.
+    // Keep only note citations that belong to retrieved context.
     const validIds = new Set(context.map((c) => c.chunk_id));
-    const citations = (obj.citations ?? []).filter((c) => validIds.has(c.chunk_id));
+    const citations = (obj.citations ?? []).filter(
+      (c) => c.source_type === 'note' && validIds.has(c.chunk_id),
+    );
     return {
-      answer: obj.answer ?? '',
+      answer: stripTranscriptReferences(obj.answer ?? ''),
       confidence: obj.confidence ?? 0,
       citations,
       contextWasEmpty: context.length === 0,
     };
   } catch {
     return {
-      answer: 'Bu soruyu mevcut ders materyallerinden net olarak cevaplayamıyorum, öğretmeninize iletiyorum.',
+      answer: 'Bu soruyu mevcut ders materyallerinden net olarak cevaplayamıyorum.',
       confidence: 0.2,
       citations: context.slice(0, 1).map(chunkToCitation),
       contextWasEmpty: context.length === 0,
@@ -144,9 +146,17 @@ function forceFinal(
   context: RetrievedChunk[],
 ): AnswerResult {
   return {
-    answer: 'Bu soruyu mevcut ders materyallerinden net olarak cevaplayamıyorum, öğretmeninize iletiyorum.',
+    answer: 'Bu soruyu mevcut ders materyallerinden net olarak cevaplayamıyorum.',
     confidence: 0.3,
     citations: context.slice(0, 1).map(chunkToCitation),
     contextWasEmpty: context.length === 0,
   };
+}
+
+function stripTranscriptReferences(answer: string): string {
+  return answer
+    .replace(/\[Ders:\s*\d{2}:\d{2}\]/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/\s+([.,;:!?])/g, '$1')
+    .trim();
 }

@@ -23,7 +23,21 @@ export async function* orchestrate(
 ): AsyncGenerator<OrchestratorEvent> {
   // 1) Router
   yield { type: 'status', agent: 'router', state: 'running' };
-  const router = await routeQuestion(question);
+  let router = await routeQuestion(question);
+  let prefetchedChunks: RetrievedChunk[] | null = null;
+
+  if (router.route === 'teacher' || router.route === 'out_of_scope') {
+    const probeChunks = await retrieve(lectureId, question, { k: 5, minScore: 0.3 });
+    if (probeChunks.length > 0) {
+      router = {
+        route: 'rag',
+        confidence: Math.max(router.confidence, 0.6),
+        reasoning: 'Question matched lecture materials during retrieval probe.',
+      };
+      prefetchedChunks = probeChunks;
+    }
+  }
+
   yield {
     type: 'status',
     agent: 'router',
@@ -46,9 +60,11 @@ export async function* orchestrate(
 
   // 2) Retrieval
   yield { type: 'status', agent: 'retrieval', state: 'running' };
-  const chunks: RetrievedChunk[] = await retrieve(lectureId, question, {
-    transcriptOnly: router.route === 'live_transcript',
-  });
+  const chunks: RetrievedChunk[] =
+    prefetchedChunks ??
+    (await retrieve(lectureId, question, {
+      transcriptOnly: router.route === 'live_transcript',
+    }));
   yield {
     type: 'status',
     agent: 'retrieval',

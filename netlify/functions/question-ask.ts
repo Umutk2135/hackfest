@@ -102,24 +102,29 @@ export default async function handler(req: Request) {
         break;
       }
       if (evt.type === 'forward_to_teacher') {
+        const message =
+          'Bu soru mevcut ders materyallerinden veya ders akışından yanıtlanamıyor.';
         await db()
           .update(questions)
           .set({
-            status: 'flagged_for_teacher',
+            status: 'answered_by_ai',
             routerDecision: evt.routerDecision,
+            aiAnswer: message,
+            aiAnswerConfidence: 0,
             flaggedReason: evt.routerDecision.reasoning,
           })
           .where(eq(questions.id, questionRow!.id));
         yield {
           event: 'token',
-          data: { text: 'Bu soru öğretmeninize iletildi.' },
+          data: { text: message },
         };
-        finalStatus = 'flagged_for_teacher';
+        finalStatus = 'answered_by_ai';
+        finalConfidence = 0;
         break;
       }
       if (evt.type === 'answer') {
         const { result, routerDecision, flag } = evt;
-        const status: QuestionStatus = flag.escalate ? 'flagged_for_teacher' : 'answered_by_ai';
+        const status: QuestionStatus = 'answered_by_ai';
         await db()
           .update(questions)
           .set({

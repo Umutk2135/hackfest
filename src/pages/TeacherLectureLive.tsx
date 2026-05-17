@@ -31,8 +31,8 @@ export function TeacherLectureLive() {
     if (!id) return;
     setBusy(true);
     try {
+      await stream.stop();
       await api.endSession(id);
-      stream.stop();
       toast.success('Oturum sonlandı, geri bildirim oluşturuluyor.');
       nav(`/teacher/lectures/${id}/feedback`);
     } catch (e) {
@@ -52,7 +52,7 @@ export function TeacherLectureLive() {
 
   function stopTranscript() {
     setEnabled(false);
-    stream.stop();
+    void stream.stop();
   }
 
   return (
