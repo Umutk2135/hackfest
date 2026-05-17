@@ -26,6 +26,7 @@ for (const name of files) {
   const source = await readFile(input, 'utf8');
   const rewritten = source
     .replaceAll("from '../functions/_lib/response'", "from './_lib/response'")
+    .replaceAll("from '../functions/_lib/email'", "from './_lib/email'")
     .replaceAll('/.netlify/functions/background-embed-notes', '/.netlify/functions/embed-notes-background')
     .replaceAll(
       '/.netlify/functions/background-embed-transcript',

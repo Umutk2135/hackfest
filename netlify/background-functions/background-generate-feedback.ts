@@ -14,6 +14,7 @@ import {
 } from '../../db/schema';
 import { generateFeedback } from '../../agents/feedback';
 import { readJson } from '../functions/_lib/response';
+import { sendFeedbackReportEmail } from '../functions/_lib/email';
 
 interface Payload {
   lectureId: string;
@@ -71,7 +72,7 @@ export default async function handler(req: Request) {
     })),
   });
 
-  await conn
+  const [persisted] = await conn
     .insert(feedbackReports)
     .values({
       lectureId,
@@ -86,9 +87,32 @@ export default async function handler(req: Request) {
       topConfusionPoints: result.topConfusionPoints,
       generationDurationMs: Date.now() - start,
     })
-    .onConflictDoNothing({ target: feedbackReports.lectureId });
+    .onConflictDoNothing({ target: feedbackReports.lectureId })
+    .returning();
 
-  return new Response(JSON.stringify({ ok: true, ms: Date.now() - start }), {
+  const emailResult = persisted
+    ? await sendFeedbackReportEmail({
+        lectureTitle: lecture.title,
+        lectureSubject: lecture.subject,
+        report: {
+          id: persisted.id,
+          lectureId: persisted.lectureId,
+          overallClarityScore: persisted.overallClarityScore,
+          overallPacingScore: persisted.overallPacingScore,
+          overallEngagementScore: persisted.overallEngagementScore,
+          rushedConcepts: persisted.rushedConcepts,
+          unansweredThreads: persisted.unansweredThreads,
+          missingExamples: persisted.missingExamples,
+          pacingAnalysis: persisted.pacingAnalysis,
+          suggestedImprovements: persisted.suggestedImprovements,
+          topConfusionPoints: persisted.topConfusionPoints,
+          generatedAt: persisted.generatedAt.toISOString(),
+          generationDurationMs: persisted.generationDurationMs,
+        },
+      }).catch((err) => ({ skipped: true, reason: `email failed: ${(err as Error).message}` }))
+    : { skipped: true, reason: 'report already existed' };
+
+  return new Response(JSON.stringify({ ok: true, ms: Date.now() - start, email: emailResult }), {
     status: 200,
     headers: { 'content-type': 'application/json' },
   });
