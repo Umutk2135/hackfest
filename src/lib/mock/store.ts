@@ -139,9 +139,9 @@ function buildFeedbackReport(lectureId: string): FeedbackReport {
   return {
     id: uid(),
     lectureId,
-    overallClarityScore: 7.8,
-    overallPacingScore: 6.9,
-    overallEngagementScore: 8.2,
+    overallClarityScore: 78,
+    overallPacingScore: 69,
+    overallEngagementScore: 82,
     rushedConcepts: [
       {
         concept: 'Lambda (regularization strength)',
