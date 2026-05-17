@@ -35,8 +35,8 @@ export default async function handler(req: Request) {
 
   // Trigger background feedback generation.
   const url = new URL(req.url);
-  const bgUrl = `${url.origin}/.netlify/functions/background-generate-feedback`;
-  fetch(bgUrl, {
+  const bgUrl = `${url.origin}/.netlify/functions/generate-feedback-background`;
+  await fetch(bgUrl, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ lectureId: id }),

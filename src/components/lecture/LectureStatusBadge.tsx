@@ -10,9 +10,9 @@ const LABEL: Record<LectureStatus, string> = {
   ended: 'Bitti',
 };
 
-const VARIANT: Record<LectureStatus, 'secondary' | 'success' | 'outline'> = {
-  draft: 'secondary',
-  live: 'success',
+const VARIANT: Record<LectureStatus, 'draft' | 'live' | 'outline'> = {
+  draft: 'draft',
+  live: 'live',
   ended: 'outline',
 };
 

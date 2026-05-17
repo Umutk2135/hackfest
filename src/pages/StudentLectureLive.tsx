@@ -24,6 +24,7 @@ export function StudentLectureLive() {
       try {
         const res = await api.getLectureByCode(code);
         setLecture(res.lecture);
+        if (res.lecture.status === 'draft') return;
         const name = window.localStorage.getItem('kursu:studentName') ?? 'Öğrenci';
         const join = await api.studentJoin(res.lecture.id, {
           studentName: name,
@@ -43,7 +44,7 @@ export function StudentLectureLive() {
       </div>
     );
   }
-  if (!lecture || !studentSessionId) {
+  if (!lecture || (lecture.status !== 'draft' && !studentSessionId)) {
     return <Skeleton className="h-[60vh]" />;
   }
 
@@ -51,18 +52,24 @@ export function StudentLectureLive() {
     <div className="space-y-4">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-semibold">{lecture.title}</h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">{lecture.subject}</p>
+          <h1 className="font-display text-2xl font-medium">{lecture.title}</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{lecture.subject}</p>
         </div>
         <LectureStatusBadge status={lecture.status} />
       </div>
 
-      <div className="grid lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         <div className="lg:col-span-3">
           <LiveTranscriptStream lectureId={lecture.id} source="server" />
         </div>
         <div className="lg:col-span-2">
-          <QuestionChat lectureId={lecture.id} studentSessionId={studentSessionId} />
+          {lecture.status === 'draft' || !studentSessionId ? (
+            <div className="kursu-chat-panel h-[60vh] flex items-center justify-center p-6 text-center text-sm text-muted-foreground">
+              Ders henüz başlatılmadı. Öğretmen canlı oturumu başlatınca soru sorabilirsiniz.
+            </div>
+          ) : (
+            <QuestionChat lectureId={lecture.id} studentSessionId={studentSessionId} />
+          )}
         </div>
       </div>
     </div>

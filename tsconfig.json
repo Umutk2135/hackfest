@@ -32,7 +32,8 @@
     "shared/**/*.ts",
     "db/**/*.ts",
     "agents/**/*.ts",
-    "netlify/**/*.ts"
+    "netlify/**/*.ts",
+    "scripts/**/*.ts"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

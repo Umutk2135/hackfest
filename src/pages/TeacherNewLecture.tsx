@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTeacherProfile } from '@/hooks/useTeacherProfile';
 import { api } from '@/lib/api';
 import { t } from '@/lib/i18n';
 import { toast } from 'sonner';
@@ -18,6 +19,7 @@ export function TeacherNewLecture() {
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
   const [busy, setBusy] = useState(false);
+  const { profile } = useTeacherProfile();
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -33,23 +35,47 @@ export function TeacherNewLecture() {
     }
   }
 
+  if (!profile) {
+    return (
+      <Card className="max-w-xl mx-auto kursu-feature-card">
+        <CardHeader>
+          <CardTitle className="font-display text-2xl">Öğretmen kaydı gerekli</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Ders oluşturmadan önce öğretmen kaydı açmalısınız. Böylece dersleriniz ayrı DB kaydıyla tutulur.
+          </p>
+          <Button type="button" onClick={() => nav('/teacher')}>
+            Öğretmen kaydına git
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="max-w-xl mx-auto">
+    <Card className="max-w-xl mx-auto kursu-feature-card">
       <CardHeader>
-        <CardTitle>{t('teacher.new.title')}</CardTitle>
+        <CardTitle className="font-display text-2xl">{t('teacher.new.title')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={submit} className="space-y-4">
           <div>
-            <label className="text-xs font-medium">{t('teacher.new.field.title')}</label>
+            <label className="block text-sm font-medium text-foreground mb-1.5">
+              {t('teacher.new.field.title')}
+            </label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} required />
           </div>
           <div>
-            <label className="text-xs font-medium">{t('teacher.new.field.subject')}</label>
+            <label className="block text-sm font-medium text-foreground mb-1.5">
+              {t('teacher.new.field.subject')}
+            </label>
             <Input value={subject} onChange={(e) => setSubject(e.target.value)} required />
           </div>
           <div>
-            <label className="text-xs font-medium">{t('teacher.new.field.description')}</label>
+            <label className="block text-sm font-medium text-foreground mb-1.5">
+              {t('teacher.new.field.description')}
+            </label>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
           </div>
           <Button type="submit" disabled={busy}>

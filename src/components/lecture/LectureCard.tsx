@@ -11,7 +11,7 @@ import type { Lecture } from '@shared/types';
 export function LectureCard({ lecture }: { lecture: Lecture }) {
   return (
     <Link to={`/teacher/lectures/${lecture.id}`}>
-      <Card className="hover:border-[hsl(var(--primary))]/50 transition-colors">
+      <Card className="kursu-feature-card hover:border-[hsl(var(--seminar))]/40 transition-colors">
         <CardHeader>
           <div className="flex items-start justify-between gap-2">
             <CardTitle className="text-base">{lecture.title}</CardTitle>

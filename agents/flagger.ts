@@ -49,6 +49,6 @@ export async function reviewAnswer(input: {
   try {
     return JSON.parse(cleaned) as FlagDecision;
   } catch {
-    return { escalate: false, reason: 'Cevap kaynaklarla destekleniyor.' };
+    return { escalate: true, reason: 'Güvenlik kontrolü tamamlanamadı; öğretmen onayı bekleniyor.' };
   }
 }

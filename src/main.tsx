@@ -16,7 +16,7 @@ createRoot(root).render(
   <StrictMode>
     <BrowserRouter>
       <App />
-      <Toaster richColors closeButton position="top-right" theme="system" />
+      <Toaster richColors closeButton position="top-right" theme="light" />
     </BrowserRouter>
   </StrictMode>,
 );

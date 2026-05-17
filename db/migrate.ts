@@ -7,12 +7,13 @@ import { readFile, readdir } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Pool } from '@neondatabase/serverless';
+import { getConnectionString } from '@netlify/database';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 async function main() {
-  const url = process.env.NETLIFY_DATABASE_URL;
-  if (!url) throw new Error('NETLIFY_DATABASE_URL is not set');
+  const url = process.env.NETLIFY_DATABASE_URL ?? getConnectionString();
+  if (!url) throw new Error('Database connection string is not set');
 
   const pool = new Pool({ connectionString: url });
   const dir = join(__dirname, 'migrations');
