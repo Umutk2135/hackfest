@@ -24,9 +24,9 @@ export function StudentJoin() {
   }
 
   return (
-    <Card className="max-w-md mx-auto">
+    <Card className="max-w-md mx-auto w-full kursu-feature-card">
       <CardHeader>
-        <CardTitle>{t('student.join.title')}</CardTitle>
+        <CardTitle className="font-display text-2xl">{t('student.join.title')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={submit} className="space-y-4">
@@ -35,17 +35,23 @@ export function StudentJoin() {
             <Input
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="KRSU-XXXX"
+              placeholder="KRSU-DEMO"
               required
               autoCapitalize="characters"
+              className="text-base min-h-11"
             />
           </div>
           <div>
             <label className="text-xs font-medium">{t('student.join.name')}</label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} required />
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              className="text-base min-h-11"
+            />
           </div>
           <p className="text-xs text-[hsl(var(--muted-foreground))]">{t('student.consent')}</p>
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full min-h-11 text-base">
             {t('student.join.submit')}
           </Button>
         </form>

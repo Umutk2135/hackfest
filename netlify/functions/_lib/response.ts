@@ -7,7 +7,7 @@ import type { ApiError } from '../../../shared/types';
 const CORS_HEADERS = {
   'access-control-allow-origin': '*',
   'access-control-allow-methods': 'GET, POST, PATCH, OPTIONS',
-  'access-control-allow-headers': 'content-type, authorization',
+  'access-control-allow-headers': 'content-type, authorization, x-kursu-teacher-id, x-kursu-teacher-name',
 };
 
 export function json(body: unknown, status = 200): Response {
@@ -80,5 +80,24 @@ export async function readJson<T>(req: Request): Promise<T> {
 }
 
 export function getQueryParam(req: Request, name: string): string | null {
-  return new URL(req.url).searchParams.get(name);
+  const url = new URL(req.url);
+  const fromQuery = url.searchParams.get(name);
+  if (fromQuery) return fromQuery;
+
+  const segments = url.pathname.split('/').filter(Boolean).map(decodeURIComponent);
+  if (name === 'code') {
+    const byCodeIdx = segments.indexOf('by-code');
+    return byCodeIdx >= 0 ? segments[byCodeIdx + 1] ?? null : null;
+  }
+  if (name !== 'id') return null;
+
+  const questionsIdx = segments.indexOf('questions');
+  if (questionsIdx >= 0 && segments[questionsIdx + 1]) return segments[questionsIdx + 1]!;
+
+  const lecturesIdx = segments.indexOf('lectures');
+  if (lecturesIdx >= 0 && segments[lecturesIdx + 1] && segments[lecturesIdx + 1] !== 'by-code') {
+    return segments[lecturesIdx + 1]!;
+  }
+
+  return null;
 }

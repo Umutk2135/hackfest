@@ -1,9 +1,6 @@
 -- OWNER: P2 (Backend)
 -- Initial schema for Kürsü. Idempotent.
--- Run via `npm run db:migrate`. Drizzle Kit can regenerate this file with `npm run db:generate`
--- but the pgvector extension + HNSW indexes at the bottom MUST be preserved.
-
-CREATE EXTENSION IF NOT EXISTS vector;
+-- Run via `npm run db:migrate`.
 
 -- ---------- enums ----------
 DO $$ BEGIN
@@ -21,6 +18,14 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ---------- tables ----------
+CREATE TABLE IF NOT EXISTS teachers (
+  id text PRIMARY KEY,
+  name text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  last_seen_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS teachers_name_idx ON teachers(name);
+
 CREATE TABLE IF NOT EXISTS lectures (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   teacher_id text NOT NULL,
@@ -52,11 +57,13 @@ CREATE TABLE IF NOT EXISTS note_chunks (
   source_note_id uuid NOT NULL REFERENCES lecture_notes(id) ON DELETE CASCADE,
   chunk_index integer NOT NULL,
   content text NOT NULL,
-  embedding vector(1024) NOT NULL,
+  embedding jsonb NOT NULL,
   page_reference text,
   created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS note_chunks_lecture_idx ON note_chunks(lecture_id);
+CREATE UNIQUE INDEX IF NOT EXISTS note_chunks_note_chunk_uidx
+  ON note_chunks(source_note_id, chunk_index);
 
 CREATE TABLE IF NOT EXISTS transcript_segments (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -65,7 +72,7 @@ CREATE TABLE IF NOT EXISTS transcript_segments (
   content text NOT NULL,
   start_time_seconds integer NOT NULL,
   end_time_seconds integer NOT NULL,
-  embedding vector(1024),
+  embedding jsonb,
   created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS transcript_segments_lecture_idx ON transcript_segments(lecture_id);
@@ -116,11 +123,3 @@ CREATE TABLE IF NOT EXISTS feedback_reports (
 CREATE UNIQUE INDEX IF NOT EXISTS feedback_reports_lecture_uidx
   ON feedback_reports(lecture_id);
 
--- ---------- HNSW vector indexes (cosine distance) ----------
-CREATE INDEX IF NOT EXISTS note_chunks_embedding_hnsw
-  ON note_chunks USING hnsw (embedding vector_cosine_ops)
-  WITH (m = 16, ef_construction = 64);
-
-CREATE INDEX IF NOT EXISTS transcript_segments_embedding_hnsw
-  ON transcript_segments USING hnsw (embedding vector_cosine_ops)
-  WITH (m = 16, ef_construction = 64);

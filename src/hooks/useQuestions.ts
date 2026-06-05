@@ -5,11 +5,11 @@
 import { usePolling } from './usePolling';
 import { api } from '@/lib/api';
 
-export function useQuestions(lectureId: string | undefined) {
+export function useQuestions(lectureId: string | undefined, studentSessionId?: string) {
   return usePolling(
     () => {
       if (!lectureId) throw new Error('no id');
-      return api.listQuestions(lectureId);
+      return api.listQuestions(lectureId, undefined, studentSessionId);
     },
     { intervalMs: 2000, enabled: Boolean(lectureId) },
   );

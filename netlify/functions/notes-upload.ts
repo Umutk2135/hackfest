@@ -47,11 +47,20 @@ export default async function handler(req: Request) {
     filename = file.name;
     uploadMethod = 'pdf';
     const buf = Buffer.from(await file.arrayBuffer());
-    const extracted = await extractPdf(buf);
+    let extracted;
+    try {
+      extracted = await extractPdf(buf);
+    } catch (err) {
+      console.error('PDF extraction failed', err);
+      return error('pdf_parse_failed', 'PDF metni okunamadı. Lütfen metin seçilebilir bir PDF yükleyin.', 400);
+    }
     if (extracted.pageCount > MAX_NOTES_PAGES) {
       return error('too_large', `PDF en fazla ${MAX_NOTES_PAGES} sayfa olabilir`, 413);
     }
     rawText = extracted.text;
+    if (!rawText.trim()) {
+      return error('pdf_empty', 'PDF içinde okunabilir metin bulunamadı.', 400);
+    }
   } else {
     const body = await readJson<UploadNotesPasteRequest>(req);
     if (!body.rawText?.trim()) return badRequest('rawText required');
@@ -67,8 +76,8 @@ export default async function handler(req: Request) {
 
   // Trigger background embedding (fire-and-forget).
   const url = new URL(req.url);
-  const bgUrl = `${url.origin}/.netlify/functions/background-embed-notes`;
-  fetch(bgUrl, {
+  const bgUrl = `${url.origin}/.netlify/functions/embed-notes-background`;
+  await fetch(bgUrl, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ noteId: note.id, lectureId }),

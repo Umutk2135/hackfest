@@ -1,58 +1,110 @@
 @import 'tailwindcss';
 
-/* shadcn-style design tokens — light + dark via .dark class on <html>. */
+/* Kürsü design tokens — see src/DESIGN.md */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 221 83% 53%;
-    --radius: 0.75rem;
-  }
+    --canvas: 40 33% 97%;
+    --ink: 60 4% 10%;
+    --body: 60 3% 22%;
+    /* Secondary text — never alias to surface-soft (see DESIGN.md) */
+    --text-muted: 45 6% 38%;
+    --hairline: 38 24% 88%;
 
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 5.5%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 240 10% 3.9%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 217 91% 60%;
+    --surface-soft: 38 33% 93%;
+    --surface-card: 38 28% 89%;
+    --surface-cream-strong: 36 24% 85%;
+    --surface-dark: 220 14% 12%;
+    --surface-dark-elevated: 220 12% 18%;
+    --on-dark: 40 20% 95%;
+    --on-dark-soft: 43 8% 58%;
+
+    --seminar: 213 35% 37%;
+    --seminar-foreground: 0 0% 100%;
+    --warm: 22 44% 55%;
+    --warm-foreground: 0 0% 100%;
+    --live: 158 40% 40%;
+    --live-muted: 158 35% 88%;
+    --citation-note: 258 28% 42%;
+    --citation-transcript: 148 28% 33%;
+    --mock-banner: 42 68% 88%;
+    --mock-banner-fg: 38 58% 30%;
+
+    --background: var(--canvas);
+    --foreground: var(--ink);
+    --card: var(--surface-card);
+    --card-foreground: var(--ink);
+    --popover: var(--canvas);
+    --popover-foreground: var(--ink);
+    --primary: var(--warm);
+    --primary-foreground: var(--warm-foreground);
+    --secondary: var(--surface-soft);
+    --secondary-foreground: var(--ink);
+    /* --muted = muted background; --muted-foreground = secondary copy on light surfaces */
+    --muted: var(--surface-soft);
+    --muted-foreground: var(--body);
+    --accent: var(--surface-soft);
+    --accent-foreground: var(--ink);
+    --destructive: 0 48% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: var(--hairline);
+    --input: var(--hairline);
+    --ring: var(--seminar);
+    --radius: 0.5rem;
+
+    --font-display: 'Fraunces', 'Literata', Georgia, serif;
+    --font-sans: 'DM Sans', Inter, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   }
 
   * {
-    @apply border-[hsl(var(--border))];
+    @apply border-border;
   }
+
+  html {
+    @apply scroll-smooth;
+  }
+
   body {
-    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))] antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
     font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer components {
+  .kursu-transcript-panel {
+    @apply rounded-lg border border-border bg-[hsl(var(--surface-soft))] p-4;
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .kursu-chat-panel {
+    @apply rounded-lg border border-border bg-card flex flex-col;
+  }
+
+  .kursu-session-code {
+    @apply rounded-lg bg-[hsl(var(--surface-soft))] border border-border p-6;
+  }
+
+  .kursu-feature-card {
+    @apply rounded-lg border-0 bg-[hsl(var(--surface-card))] shadow-none;
+  }
+
+  .kursu-mock-banner {
+    @apply bg-[hsl(var(--mock-banner))] text-[hsl(var(--mock-banner-fg))] border-b border-[hsl(42_50%_75%)];
+  }
+
+  .kursu-footer {
+    @apply bg-[hsl(var(--surface-dark))] text-[hsl(var(--on-dark-soft))] border-t-0;
   }
 }
 
@@ -74,5 +126,8 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
   --radius: var(--radius);
 }

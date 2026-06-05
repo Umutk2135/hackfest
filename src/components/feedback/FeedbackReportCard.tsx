@@ -15,9 +15,9 @@ export function FeedbackReportCard({
   empty?: boolean;
 }) {
   return (
-    <Card>
+    <Card className="kursu-feature-card">
       <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
+        <CardTitle className="font-display text-lg font-medium">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         {empty ? (

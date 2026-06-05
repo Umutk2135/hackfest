@@ -46,8 +46,8 @@ export async function withRetry<T>(fn: () => Promise<T>, attempts = 2): Promise<
     } catch (err) {
       lastErr = err;
       const status = (err as { status?: number })?.status;
-      if (status !== 429 && status !== 503 && status !== 529 && i === 0) {
-        // Non-retryable.
+      const retryable = status === 429 || status === 503 || status === 529;
+      if (!retryable || i === attempts) {
         throw err;
       }
       await new Promise((r) => setTimeout(r, 400 * Math.pow(2, i)));

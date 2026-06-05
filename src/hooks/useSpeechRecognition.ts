@@ -18,6 +18,7 @@ export type SpeechStatus = 'idle' | 'listening' | 'denied' | 'unsupported' | 'er
 interface Options {
   lang?: string;
   onFinal?: (text: string) => void;
+  onInterim?: (text: string) => void;
 }
 
 export function useSpeechRecognition(opts: Options = {}) {
@@ -28,6 +29,18 @@ export function useSpeechRecognition(opts: Options = {}) {
   const [interim, setInterim] = useState('');
   const recogRef = useRef<SpeechRecognition | null>(null);
   const wantRunningRef = useRef(false);
+  const statusRef = useRef<SpeechStatus>('idle');
+  const onFinalRef = useRef(opts.onFinal);
+  const onInterimRef = useRef(opts.onInterim);
+
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
+
+  useEffect(() => {
+    onFinalRef.current = opts.onFinal;
+    onInterimRef.current = opts.onInterim;
+  }, [opts.onFinal, opts.onInterim]);
 
   useEffect(() => {
     const Ctor = window.SpeechRecognition ?? window.webkitSpeechRecognition;
@@ -51,12 +64,13 @@ export function useSpeechRecognition(opts: Options = {}) {
         if (!alt) continue;
         if (r.isFinal) {
           setFinalSegments((prev) => [...prev, alt.transcript.trim()]);
-          opts.onFinal?.(alt.transcript.trim());
+          onFinalRef.current?.(alt.transcript.trim());
         } else {
           interimText += alt.transcript;
         }
       }
       setInterim(interimText);
+      onInterimRef.current?.(interimText.trim());
     };
     recog.onerror = (e: SpeechRecognitionErrorEvent) => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
@@ -68,9 +82,10 @@ export function useSpeechRecognition(opts: Options = {}) {
     };
     recog.onend = () => {
       // Auto-restart so single-shot stops don't kill the session mid-lecture.
-      if (wantRunningRef.current && status !== 'denied') {
+      if (wantRunningRef.current && statusRef.current !== 'denied') {
         try {
           recog.start();
+          setStatus('listening');
         } catch {
           // Already started — ignore.
         }

@@ -13,8 +13,8 @@
   # Default to 26s timeout (Netlify Pro). Background functions run separately with 15min budget.
   external_node_modules = ["@neondatabase/serverless", "pdf-parse"]
 
-[functions."background-*"]
-  # Background functions live in their own directory.
+[functions."*-background"]
+  # Netlify treats functions with the -background suffix as background functions.
 
 [dev]
   command = "npm run dev:vite"
@@ -24,6 +24,16 @@
 
 # ----- API REWRITES -----
 # REST endpoints
+[[redirects]]
+  from = "/api/health"
+  to = "/.netlify/functions/health"
+  status = 200
+
+[[redirects]]
+  from = "/api/teachers/register"
+  to = "/.netlify/functions/teachers"
+  status = 200
+
 [[redirects]]
   from = "/api/lectures"
   to = "/.netlify/functions/lectures"
@@ -71,15 +81,8 @@
 
 [[redirects]]
   from = "/api/lectures/:id/questions"
-  to = "/.netlify/functions/question-ask?id=:id"
+  to = "/.netlify/functions/lecture-questions?id=:id"
   status = 200
-  conditions = { Method = ["POST"] }
-
-[[redirects]]
-  from = "/api/lectures/:id/questions"
-  to = "/.netlify/functions/questions-list?id=:id"
-  status = 200
-  conditions = { Method = ["GET"] }
 
 [[redirects]]
   from = "/api/questions/:id/teacher-response"
