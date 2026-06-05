@@ -1,11 +1,11 @@
 /**
  * OWNER: P1 (Frontend)
- * CTA to start a live session. Caller is responsible for navigation.
  */
 import { useState } from 'react';
 import { Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
+import { t } from '@/lib/i18n';
 import { toast } from 'sonner';
 
 interface Props {
@@ -28,9 +28,9 @@ export function StartSessionButton({ lectureId, onStarted }: Props) {
     }
   }
   return (
-    <Button size="lg" onClick={go} disabled={busy}>
+    <Button size="lg" variant="live" onClick={go} disabled={busy}>
       <Mic className="h-4 w-4" />
-      Canlı oturumu başlat
+      {t('teacher.detail.start')}
     </Button>
   );
 }

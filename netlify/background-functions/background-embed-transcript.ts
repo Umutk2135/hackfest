@@ -58,4 +58,4 @@ export default async function handler(req: Request) {
 // keep `inArray` import warning-free for future bulk-update refactor.
 void inArray;
 
-export const config = { path: '/.netlify/functions/background-embed-transcript' };
+export const config = { path: '/.netlify/functions/embed-transcript-background' };

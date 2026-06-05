@@ -4,7 +4,7 @@
  * Called by the teacher's browser every ~3 seconds with a new transcript segment.
  * Triggers background-embed-transcript on a debounce.
  */
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { db } from '../../db/client';
 import { transcriptSegments, lectures } from '../../db/schema';
 import {
@@ -20,7 +20,7 @@ import {
 import type { TranscriptAppendRequest, TranscriptAppendResponse } from '../../shared/types';
 import { MAX_TRANSCRIPT_CHARS } from '../../shared/types';
 
-// Debounce state per cold-start. Each lecture's transcript embed is triggered at most every 60s.
+// Debounce state per cold-start. Transcript embedding is async only; ingestion never calls an LLM.
 const lastEmbedTriggerMs = new Map<string, number>();
 const EMBED_DEBOUNCE_MS = 60_000;
 
@@ -31,8 +31,21 @@ export default async function handler(req: Request) {
   if (!lectureId) return badRequest('id is required');
 
   const body = await readJson<TranscriptAppendRequest>(req);
-  if (typeof body.segmentIndex !== 'number' || !body.content) {
+  if (
+    typeof body.segmentIndex !== 'number' ||
+    !Number.isInteger(body.segmentIndex) ||
+    body.segmentIndex < 0 ||
+    !body.content?.trim()
+  ) {
     return badRequest('segmentIndex and content required');
+  }
+  if (
+    !Number.isFinite(body.startTimeSeconds) ||
+    !Number.isFinite(body.endTimeSeconds) ||
+    body.startTimeSeconds < 0 ||
+    body.endTimeSeconds < body.startTimeSeconds
+  ) {
+    return badRequest('invalid transcript timestamps');
   }
   if (body.content.length > MAX_TRANSCRIPT_CHARS) {
     return error('too_large', 'segment too large', 413);
@@ -40,6 +53,9 @@ export default async function handler(req: Request) {
 
   const [lecture] = await db().select().from(lectures).where(eq(lectures.id, lectureId)).limit(1);
   if (!lecture) return notFound('lecture not found');
+  if (lecture.status !== 'live') {
+    return error('invalid_state', 'lecture is not live', 409);
+  }
 
   const [row] = await db()
     .insert(transcriptSegments)
@@ -50,23 +66,48 @@ export default async function handler(req: Request) {
       startTimeSeconds: body.startTimeSeconds,
       endTimeSeconds: body.endTimeSeconds,
     })
-    .onConflictDoNothing()
+    .onConflictDoUpdate({
+      target: [transcriptSegments.lectureId, transcriptSegments.segmentIndex],
+      set: {
+        content: body.content,
+        startTimeSeconds: body.startTimeSeconds,
+        endTimeSeconds: body.endTimeSeconds,
+        embedding: null,
+      },
+    })
     .returning();
 
-  // Debounced background embed trigger.
-  const now = Date.now();
-  const last = lastEmbedTriggerMs.get(lectureId) ?? 0;
-  if (now - last >= EMBED_DEBOUNCE_MS) {
-    lastEmbedTriggerMs.set(lectureId, now);
-    const url = new URL(req.url);
-    fetch(`${url.origin}/.netlify/functions/background-embed-transcript`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ lectureId }),
-    }).catch(() => undefined);
+  if (row) {
+    // Debounced embedding only; transcript ingestion never calls an LLM.
+    const now = Date.now();
+    const last = lastEmbedTriggerMs.get(lectureId) ?? 0;
+    if (now - last >= EMBED_DEBOUNCE_MS) {
+      lastEmbedTriggerMs.set(lectureId, now);
+      const url = new URL(req.url);
+      await fetch(`${url.origin}/.netlify/functions/embed-transcript-background`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ lectureId }),
+      }).catch(() => undefined);
+    }
   }
 
-  const resp: TranscriptAppendResponse = { ok: true, segmentId: row?.id ?? '' };
+  let segmentId = row?.id;
+  if (!segmentId) {
+    const [existing] = await db()
+      .select({ id: transcriptSegments.id })
+      .from(transcriptSegments)
+      .where(
+        and(
+          eq(transcriptSegments.lectureId, lectureId),
+          eq(transcriptSegments.segmentIndex, body.segmentIndex),
+        ),
+      )
+      .limit(1);
+    segmentId = existing?.id;
+  }
+
+  const resp: TranscriptAppendResponse = { ok: true, segmentId: segmentId ?? '' };
   return json(resp);
 }
 

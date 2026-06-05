@@ -1,11 +1,10 @@
 /**
  * OWNER: P1 (Frontend)
- * "/student/lectures/:code" — live transcript + chat.
+ * "/student/lectures/:code" — live Q&A (transcript is teacher-only).
  */
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
-import { LiveTranscriptStream } from '@/components/live/LiveTranscriptStream';
 import { QuestionChat } from '@/components/student/QuestionChat';
 import { LectureStatusBadge } from '@/components/lecture/LectureStatusBadge';
 import { api } from '@/lib/api';
@@ -24,6 +23,7 @@ export function StudentLectureLive() {
       try {
         const res = await api.getLectureByCode(code);
         setLecture(res.lecture);
+        if (res.lecture.status === 'draft') return;
         const name = window.localStorage.getItem('kursu:studentName') ?? 'Öğrenci';
         const join = await api.studentJoin(res.lecture.id, {
           studentName: name,
@@ -43,27 +43,30 @@ export function StudentLectureLive() {
       </div>
     );
   }
-  if (!lecture || !studentSessionId) {
+  if (!lecture || (lecture.status !== 'draft' && !studentSessionId)) {
     return <Skeleton className="h-[60vh]" />;
   }
+
+  const waitingForSession = lecture.status === 'draft' || !studentSessionId;
 
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-semibold">{lecture.title}</h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">{lecture.subject}</p>
+          <h1 className="font-display text-2xl font-medium">{lecture.title}</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{lecture.subject}</p>
         </div>
         <LectureStatusBadge status={lecture.status} />
       </div>
 
-      <div className="grid lg:grid-cols-5 gap-4">
-        <div className="lg:col-span-3">
-          <LiveTranscriptStream lectureId={lecture.id} source="server" />
-        </div>
-        <div className="lg:col-span-2">
+      <div className="max-w-2xl mx-auto w-full">
+        {waitingForSession ? (
+          <div className="kursu-chat-panel min-h-[min(72vh,calc(100dvh-12rem))] flex items-center justify-center p-6 text-center text-sm text-muted-foreground">
+            Ders henüz başlatılmadı. Öğretmen canlı oturumu başlatınca soru sorabilirsiniz.
+          </div>
+        ) : (
           <QuestionChat lectureId={lecture.id} studentSessionId={studentSessionId} />
-        </div>
+        )}
       </div>
     </div>
   );

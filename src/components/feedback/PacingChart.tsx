@@ -15,8 +15,8 @@ export function PacingChart({ data }: { data: FeedbackReport['pacingAnalysis'] }
         <YAxis tick={{ fontSize: 11 }} />
         <Tooltip />
         <Legend />
-        <Bar dataKey="seconds_spent" name="Geçen süre (sn)" fill="hsl(217, 91%, 60%)" />
-        <Bar dataKey="suggested_seconds" name="Önerilen (sn)" fill="hsl(240, 5%, 65%)" />
+        <Bar dataKey="seconds_spent" name="Geçen süre (sn)" fill="hsl(213 35% 37%)" />
+        <Bar dataKey="suggested_seconds" name="Önerilen (sn)" fill="hsl(22 38% 55%)" />
       </BarChart>
     </ResponsiveContainer>
   );

@@ -1,43 +1,40 @@
 /**
  * OWNER: P1 (Frontend)
- * Header + main content wrapper. Includes role switcher + theme toggle.
  */
 import type { ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { RoleSwitcher } from './RoleSwitcher';
-import { ThemeToggle } from './ThemeToggle';
-import { useRole } from '@/hooks/useRole';
+import { Link } from 'react-router-dom';
+import { PodiumMark } from './PodiumMark';
 import { t } from '@/lib/i18n';
+import { isMockApi } from '@/lib/api';
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { role } = useRole();
-  const navigate = useNavigate();
-
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-10 border-b border-[hsl(var(--border))] bg-[hsl(var(--background))]/80 backdrop-blur">
-        <div className="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 font-semibold tracking-tight">
-            <span className="inline-block h-5 w-5 rounded bg-[hsl(var(--primary))]" />
-            <span>{t('app.name')}</span>
+    <div className="min-h-screen flex flex-col bg-background">
+      <header className="sticky top-0 z-10 border-b border-border bg-background/90 backdrop-blur-md">
+        <div className="mx-auto max-w-6xl px-4 h-14 flex items-center gap-4">
+          <Link to="/" className="flex items-center gap-2.5 text-foreground shrink-0">
+            <PodiumMark className="h-6 w-6 text-[hsl(var(--seminar))]" />
+            <span className="font-display text-xl font-medium tracking-tight">{t('app.name')}</span>
           </Link>
-          <div className="flex items-center gap-2">
-            <RoleSwitcher
-              value={role}
-              onChange={(r) => {
-                navigate(r === 'teacher' ? '/teacher' : '/student');
-              }}
-            />
-            <ThemeToggle />
-          </div>
         </div>
       </header>
 
-      <main className="flex-1 mx-auto w-full max-w-6xl px-4 py-6">{children}</main>
+      {isMockApi ? (
+        <div role="status" className="kursu-mock-banner text-center py-2 text-xs font-medium">
+          {t('app.mock.banner')}
+        </div>
+      ) : null}
 
-      <footer className="border-t border-[hsl(var(--border))] py-4">
-        <div className="mx-auto max-w-6xl px-4 text-xs text-[hsl(var(--muted-foreground))]">
-          Kürsü · HSIL Hackathon 2026
+      <main className="flex-1 mx-auto w-full max-w-6xl px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom))]">
+        {children}
+      </main>
+
+      <footer className="kursu-footer py-8 mt-auto">
+        <div className="mx-auto max-w-6xl px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div className="flex items-center gap-2 text-[hsl(var(--on-dark))]">
+            <PodiumMark className="h-4 w-4" />
+            <span className="font-display text-sm font-medium">Kürsü</span>
+          </div>
         </div>
       </footer>
     </div>

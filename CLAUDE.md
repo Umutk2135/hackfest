@@ -9,6 +9,7 @@ Kürsü — a live lecture platform with a multi-agent AI teaching assistant. Ha
 - **No authentication.** A `RoleSwitcher` in the header decides teacher vs student. Teacher id is hardcoded to `teacher_demo_001`. Do not add login screens, JWTs, or session cookies.
 - **No websockets.** Real-time uses 2-second polling for transcript + question panel, and Server-Sent Events for answer streaming.
 - **Speech is browser-side only.** Web Speech API on the teacher's browser. We never upload audio.
+- **Transcript ingestion is not an LLM call.** `transcript-append.ts` only stores segments and may trigger Voyage embedding in the background. Claude calls are allowed only for student questions and post-lecture feedback.
 - **API contract lives in `shared/types.ts`.** It is the source of truth for frontend + backend + agents. Always read it before editing endpoint shapes.
 - **Models**: Opus 4.7 for Answer + Feedback agents (`claude-opus-4-7`), Sonnet 4.6 for Router + Flagger (`claude-sonnet-4-6`). All centralized in `agents/claude.ts`.
 - **Embeddings**: Voyage `voyage-3-large` at 1024 dimensions.

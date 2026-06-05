@@ -25,6 +25,10 @@ export async function* streamSse(body: ReadableStream<Uint8Array> | null): Async
       if (evt) yield evt;
     }
   }
+  if (buffer.trim()) {
+    const evt = parseEvent(buffer);
+    if (evt) yield evt;
+  }
 }
 
 function parseEvent(block: string): SseEvent | null {

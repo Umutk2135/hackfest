@@ -26,6 +26,10 @@ export async function reviewAnswer(input: {
     return { escalate: true, reason: 'İlgili bağlam bulunamadı.' };
   }
 
+  if (input.confidence >= 0.9 && !hasUncertaintyOrFallback(input.answer)) {
+    return { escalate: false, reason: 'Cevap kaynaklarla destekleniyor.' };
+  }
+
   const res = await withRetry(() =>
     claude().messages.create({
       model: MODELS.SMALL,
@@ -49,6 +53,18 @@ export async function reviewAnswer(input: {
   try {
     return JSON.parse(cleaned) as FlagDecision;
   } catch {
-    return { escalate: false, reason: 'Cevap kaynaklarla destekleniyor.' };
+    return { escalate: true, reason: 'Güvenlik kontrolü tamamlanamadı; öğretmen onayı bekleniyor.' };
   }
+}
+
+function hasUncertaintyOrFallback(answer: string): boolean {
+  const normalized = answer.toLocaleLowerCase('tr-TR');
+  return [
+    'net olarak cevaplayamıyorum',
+    "i don't have information",
+    'olabilir',
+    'sanırım',
+    'may ',
+    'might ',
+  ].some((needle) => normalized.includes(needle));
 }
